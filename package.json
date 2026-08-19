@@ -9,7 +9,14 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@cloudinary/react": "^1.14.4",
+    "cheerio": "^1.2.0",
+    "cloudinary": "^2.10.0",
+    "firebase": "^12.17.1",
+    "github-markdown-css": "^5.9.0",
     "next": "16.3.1",
+    "next-auth": "^4.24.15",
+    "octokit": "^5.0.5",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
@@ -20,6 +27,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
+    "lucide-react": "^1.32.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
