@@ -14,6 +14,7 @@
     "cloudinary": "^2.10.0",
     "firebase": "^12.17.1",
     "github-markdown-css": "^5.9.0",
+    "js-cookie": "^3.0.8",
     "next": "16.3.1",
     "next-auth": "^4.24.15",
     "octokit": "^5.0.5",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

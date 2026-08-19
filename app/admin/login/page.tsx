@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import Cookies from 'js-cookie';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -11,17 +12,27 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push('/admin/dashboard');
-    } catch (err: any) {
-      console.error("Firebase Auth Error:", err);
-      // This will display the exact Firebase error code on the screen
-      setError(`Error: ${err.code || err.message}`);
-    }
-  };
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    
+    // Get the Firebase ID token
+    const token = await userCredential.user.getIdToken();
+    
+    // Use js-cookie to set the session
+    Cookies.set('admin_session', token, { 
+      expires: 1, // Expires in 1 day
+      path: '/',
+      sameSite: 'strict'
+    });
+    
+    router.push('/admin/dashboard');
+  } catch (err: any) {
+    console.error("Firebase Auth Error:", err);
+    setError(`Error: ${err.code || err.message}`);
+  }
+};
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4">

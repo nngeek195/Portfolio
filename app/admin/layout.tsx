@@ -6,6 +6,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 import { LayoutDashboard, Import, Image as ImageIcon, LogOut } from 'lucide-react';
+import Cookies from 'js-cookie';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
@@ -52,12 +53,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="p-4 border-t border-gray-800">
-          <button 
-            onClick={() => auth.signOut()}
+          
+            <button 
+            onClick={async () => {
+                await auth.signOut();
+                Cookies.remove('admin_session', { path: '/' }); // Clear cookie
+                router.push('/admin/login');
+            }}
             className="flex items-center gap-3 p-3 w-full rounded-lg text-red-400 hover:bg-red-950/30 transition-colors"
-          >
+            >
             <LogOut size={20} /> Sign Out
-          </button>
+            </button>
         </div>
       </aside>
 
