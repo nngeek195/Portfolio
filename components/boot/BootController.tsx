@@ -9,7 +9,9 @@ import { startBootProgress, type LineId } from '@/lib/boot/progress';
 // Timing rules for the boot preloader (ms since navigation start).
 export const BOOT_MIN_MS = 1200; // never flicker on fast connections
 export const BOOT_MAX_MS = 4000; // hard cap: show the site anyway, keep loading in the background
-const EXIT_MS = 450;
+const LOCKED_MS = 560; // UPLINK ESTABLISHED flash
+const EXIT_MS = 900; // eye-slit opening
+const EXIT_FAST_MS = 400; // after SKIP
 
 // Screen-reader milestones (the live region is not updated on every percent).
 const MILESTONE: Record<LineId, string> = {
@@ -49,27 +51,39 @@ export default function BootController() {
 
     let exiting = false;
     const timers: number[] = [];
-    const exit = () => {
+    const finish = () => {
+      root.setAttribute('data-boot', 'done');
+      root.classList.remove('boot-lock');
+      window.clearInterval(clock);
+      if (boot.contains(document.activeElement)) (document.activeElement as HTMLElement).blur();
+      getLenis()?.start();
+      window.__bootDoneAt = performance.now();
+      window.dispatchEvent(new Event(BOOT_DONE_EVENT));
+    };
+    // 1. "locked" (UPLINK ESTABLISHED) -> 2. eye-slit opening + hero intro -> 3. done.
+    // The scenes are re-measured while the screen is still covered, so no pinned scene
+    // can jump in view (the scroll lock keeps the same page width, see globals.css).
+    const exit = (fast = false) => {
       if (exiting) return;
       exiting = true;
-      window.__bootExitAt = performance.now();
-      root.setAttribute('data-boot', 'exit');
+      cancelAnimationFrame(raf);
+      if (!fast) boot.dataset.phase = 'locked';
       timers.push(
-        window.setTimeout(() => {
-          root.setAttribute('data-boot', 'done');
-          root.classList.remove('boot-lock');
-          window.clearInterval(clock);
-          if (boot.contains(document.activeElement)) (document.activeElement as HTMLElement).blur();
-          // Unlock first (Lenis's stopped state clips the page), then re-measure the scenes.
-          getLenis()?.start();
-          ScrollTrigger.refresh();
-          window.__bootDoneAt = performance.now();
-          window.dispatchEvent(new Event(BOOT_DONE_EVENT));
-        }, EXIT_MS)
+        window.setTimeout(
+          () => {
+            ScrollTrigger.refresh();
+            window.__bootExitAt = performance.now();
+            if (fast) boot.dataset.fast = '';
+            root.setAttribute('data-boot', 'exit'); // hero intro + night-vision flash start now
+            timers.push(window.setTimeout(finish, fast ? EXIT_FAST_MS : EXIT_MS));
+          },
+          fast ? 0 : LOCKED_MS
+        )
       );
     };
 
     // ---- real progress ------------------------------------------------------
+    let raf = 0;
     const progress = startBootProgress();
     const pctEl = $<HTMLElement>('[data-boot-pct]');
     const statusEl = $<HTMLElement>('[data-boot-status]');
@@ -78,6 +92,8 @@ export default function BootController() {
       const li = $<HTMLElement>(`[data-boot-line="${id}"]`);
       if (li) {
         if (result === 'flat') li.querySelector('.boot-ok')!.textContent = 'FLAT';
+        // Show it once the line has finished typing (its end time is in ms since first paint).
+        li.style.setProperty('--ok-delay', `${Math.max(0, Number(li.dataset.end) - performance.now())}ms`);
         li.dataset.state = 'ok';
       }
       // Milestones only; a polite region coalesces quick successions.
@@ -92,7 +108,6 @@ export default function BootController() {
     let lastLit = -1;
     let lastText = '';
     let last = performance.now();
-    let raf = 0;
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
       const dt = Math.min(0.1, (now - last) / 1000);
@@ -119,11 +134,14 @@ export default function BootController() {
     raf = requestAnimationFrame(frame);
 
     const skipBtn = $<HTMLButtonElement>('[data-boot-skip]');
-    const onSkip = () => exit();
+    const onSkip = () => {
+      if (statusEl) statusEl.textContent = 'Skipped. Site ready.';
+      exit(true);
+    };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' || e.key === 'Enter') {
         e.preventDefault();
-        exit();
+        onSkip();
       }
     };
     skipBtn?.addEventListener('click', onSkip);

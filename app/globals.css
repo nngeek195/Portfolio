@@ -376,29 +376,31 @@ html[data-boot="on"] .hero-intro .intro-frame {
   white-space: nowrap;
 }
 .boot-ch,
-.boot-dots {
+.boot-status {
   opacity: 0;
   animation: boot-in 1ms var(--d) forwards;
 }
-.boot-dots {
-  margin-left: 2px;
-  color: var(--color-ash);
+/* Status cell: blinking dots, replaced in place by OK (or FLAT) when the line's
+   work is done. --ok-delay (set by the controller) waits for the typing to finish. */
+.boot-status {
+  display: inline-grid;
+  margin-left: 4px;
 }
-.boot-li:not([data-state="ok"]) .boot-dots {
-  animation: boot-in 1ms var(--d) forwards, boot-blink 0.9s calc(var(--d) + 50ms) infinite;
+.boot-status > span {
+  grid-area: 1 / 1;
+  transition: opacity 0.12s var(--ok-delay, 0ms);
+}
+.boot-dots { color: var(--color-ash); }
+.boot-dots > i {
+  font-style: normal;
+  animation: boot-blink 0.9s infinite;
 }
 .boot-ok {
-  position: absolute;
-  margin-left: 10px;
   color: var(--color-bone);
   opacity: 0;
 }
-.boot-li[data-state="ok"] .boot-ok {
-  animation: boot-in 0.15s var(--end) forwards;
-}
-.boot-li[data-state="ok"] .boot-dots {
-  animation: boot-in 1ms var(--d) forwards;
-}
+.boot-li[data-state="ok"] .boot-dots { opacity: 0; }
+.boot-li[data-state="ok"] .boot-ok { opacity: 1; }
 
 /* Centre piece */
 .boot-core {
@@ -577,11 +579,62 @@ html[data-boot="on"] .hero-intro .intro-frame {
   box-shadow: inset 0 0 0 1px var(--color-nv);
 }
 
-/* Exit (simple fade; the cinematic exit builds on this) */
-html[data-boot="exit"] .boot {
+/* ---- Exit ------------------------------------------------------------------
+   1. data-phase="locked": UPLINK ESTABLISHED flashes, the crosshair locks
+   2. html[data-boot="exit"]: the CRT line flares into the eye slit and the two
+      halves of the screen slide apart; the hero intro (night-vision flash, copy
+      rising) starts at that same moment.
+   [data-fast] (SKIP / Esc / Enter): the same opening, quicker. */
+.boot[data-phase="locked"] .boot-label-loading {
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.12s;
+}
+.boot[data-phase="locked"] .boot-label-done {
+  animation: boot-established 0.56s linear forwards;
+}
+@keyframes boot-established {
+  0% { opacity: 0; }
+  12%, 38% { opacity: 1; }
+  50% { opacity: 0.25; }
+  62%, 100% { opacity: 1; }
+}
+.boot[data-phase="locked"] .boot-crosshair .lock {
+  stroke: var(--color-nv);
+}
+.boot[data-phase="locked"] .boot-pct {
+  color: var(--color-nv);
+  transition: color 0.2s;
+}
+html[data-boot="exit"] .boot {
   pointer-events: none;
+}
+html[data-boot="exit"] .boot-stage {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+html[data-boot="exit"] .boot-skip {
+  animation: none; /* its fade-in fill would otherwise keep it visible */
+  opacity: 0;
+}
+html[data-boot="exit"] .boot-lid {
+  transition: transform 0.75s cubic-bezier(0.7, 0, 0.25, 1) 0.14s;
+}
+html[data-boot="exit"] .boot-lid-top { transform: translateY(-101%); }
+html[data-boot="exit"] .boot-lid-bottom { transform: translateY(101%); }
+html[data-boot="exit"] .boot-line {
+  animation: boot-slit 0.6s ease-out forwards;
+}
+@keyframes boot-slit {
+  0% { transform: scaleX(1) scaleY(1); opacity: 1; }
+  25% { transform: scaleX(1) scaleY(4); opacity: 1; }
+  100% { transform: scaleX(1.05) scaleY(1); opacity: 0; }
+}
+html[data-boot="exit"] .boot[data-fast] .boot-lid {
+  transition-duration: 0.38s;
+  transition-delay: 0s;
+}
+html[data-boot="exit"] .boot[data-fast] .boot-line {
+  animation-duration: 0.3s;
 }
 
 /* ==========================================================================

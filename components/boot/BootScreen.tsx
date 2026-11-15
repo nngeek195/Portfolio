@@ -19,9 +19,10 @@ export const BOOT_LINES = [
 export const BOOT_SEGMENTS = 20;
 
 // Typing schedule (ms after first paint): line i starts at LINE_START + i * LINE_GAP.
-const LINE_START = 450;
-const LINE_GAP = 230;
-const CHAR_MS = 18;
+// All five lines finish typing by ~1.08 s, inside the 1.2 s minimum display.
+const LINE_START = 300;
+const LINE_GAP = 150;
+const CHAR_MS = 12;
 
 // Decides before first paint: show on the first load of a session or with ?preload=1;
 // the simple version for reduced motion, small screens and FX: LITE (localStorage "fx").
@@ -35,16 +36,18 @@ function TypedLine({ index, label }: { index: number; label: string }) {
   const text = `> ${label}`;
   const end = start + text.length * CHAR_MS;
   return (
-    <li data-boot-line={BOOT_LINES[index].id} className="boot-li" style={{ '--end': `${end}ms` } as React.CSSProperties}>
+    <li data-boot-line={BOOT_LINES[index].id} data-end={end} className="boot-li">
       {Array.from(text, (ch, i) => (
         <span key={i} className="boot-ch" style={{ '--d': `${start + i * CHAR_MS}ms` } as React.CSSProperties}>
           {ch === ' ' ? ' ' : ch}
         </span>
       ))}
-      <span className="boot-dots" style={{ '--d': `${end}ms` } as React.CSSProperties}>
-        ...
+      <span className="boot-status" style={{ '--d': `${end}ms` } as React.CSSProperties}>
+        <span className="boot-dots">
+          <i>...</i>
+        </span>
+        <span className="boot-ok">OK</span>
       </span>
-      <span className="boot-ok">OK</span>
     </li>
   );
 }
