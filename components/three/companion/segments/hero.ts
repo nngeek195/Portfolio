@@ -1,5 +1,5 @@
 import { gsap } from 'gsap';
-import { sceneProgress } from '@/lib/motion/scene-progress';
+import { sceneProgress, scenePastEnd } from '@/lib/motion/scene-progress';
 import { clamp01, lerp, smoothstep, type Claim, type DirectorContext } from '../types';
 
 /**
@@ -14,7 +14,10 @@ export function hero({ t, W, H, rect }: DirectorContext): Claim | null {
   const el = document.querySelector<HTMLElement>('[data-hero="heli"]');
   const still = rect('[data-hero="heli"]');
   if (!section || !el || !still || still.width === 0) return null;
-  const weight = smoothstep(H * 0.55, H * 0.95, section.bottom);
+  // Owns it until the hero scene ends, then hands over within 0.2 of a screen of scrolling (it has
+  // climbed out of frame by then, so a slow handover would leave no helicopter on screen).
+  const past = scenePastEnd('hero');
+  const weight = past === null ? smoothstep(H * 0.55, H * 0.95, section.bottom) : 1 - smoothstep(0, H * 0.2, past);
   if (weight <= 0) return null;
 
   const sp = sceneProgress('hero');

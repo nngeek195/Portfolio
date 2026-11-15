@@ -106,6 +106,8 @@ const SAMPLER = `(() => {
       else if (h.bright < 0.25) reason = 'too dim';
       if (reason) {
         S.heliMissing++;
+        S.transient = S.transient || {};
+        S.transient[reason] = (S.transient[reason] || 0) + 1;
         if (settled) { S.heliMissingSettled++; note('heli', reason, { section: sectionAt(), x: Math.round(h.x), hy: Math.round(h.y), owner: h.owner }); }
       }
     }
@@ -160,7 +162,7 @@ async function main() {
     const tops = () => ev(`[...document.querySelectorAll('main section[id]')].map(s => [s.id, Math.round(s.getBoundingClientRect().top + scrollY)])`);
     const jump = (y) => ev(`window.scrollTo(0, ${y})`);
     const trig = (name, f) => ev(`(() => { const t = __dbg.triggers.${name}; return t ? Math.round(t.start + (t.end - t.start) * ${f}) : null })()`);
-    const snap = async () => ev(`(() => { const s = JSON.parse(JSON.stringify(window.__stress)); Object.assign(window.__stress, { frames: 0, heliShould: 0, heliMissing: 0, heliMissingSettled: 0, rifleChecked: 0, rifleBad: 0, rifleBadSettled: 0, rifleStale: 0, maxRifleErr: 0, maxProgErr: 0, reasons: {}, examples: [] }); return s; })()`);
+    const snap = async () => ev(`(() => { const s = JSON.parse(JSON.stringify(window.__stress)); Object.assign(window.__stress, { frames: 0, heliShould: 0, heliMissing: 0, heliMissingSettled: 0, rifleChecked: 0, rifleBad: 0, rifleBadSettled: 0, rifleStale: 0, maxRifleErr: 0, maxProgErr: 0, reasons: {}, transient: {}, examples: [] }); return s; })()`);
 
     const scenarios = {
       async flicks() {
@@ -290,6 +292,7 @@ async function main() {
         `  ${name.padEnd(10)} ${((Date.now() - t0) / 1000).toFixed(0).padStart(3)}s  heli missing ${String(s.heliMissing).padStart(5)}/${String(s.heliShould).padEnd(5)} (${pct(s.heliMissing, s.heliShould).padStart(6)})  settled ${String(s.heliMissingSettled).padStart(4)}   rifle off-pose ${String(s.rifleBad).padStart(4)}/${String(s.rifleChecked).padEnd(4)} settled ${String(s.rifleBadSettled).padStart(4)}  stale ${s.rifleStale}  maxPartErr ${s.maxRifleErr.toFixed(3)}m maxProgErr ${(s.maxProgErr || 0).toFixed(2)}`
       );
       for (const [k, v] of Object.entries(s.reasons)) console.log(`      ${String(v).padStart(5)}  ${k}`);
+      for (const [k, v] of Object.entries(s.transient || {})) console.log(`      ${String(v).padStart(5)}  (transient) heli: ${k}`);
     }
     const events = await ev('__dbg.events.join("\\n")');
     console.log('  debug events:\n    ' + (events || '').split('\n').slice(-12).join('\n    '));

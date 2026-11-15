@@ -22,6 +22,12 @@ export function registerScene(name: string, st: ScrollTrigger | undefined) {
   };
 }
 
+/** Scroll distance past a scene's end (negative before it ends), or null when the scene isn't running. */
+export function scenePastEnd(name: string): number | null {
+  const st = scenes.get(name);
+  return st ? st.scroll() - st.end : null;
+}
+
 /**
  * Progress 0..1 of a scene for the current scroll position, or -1 when the
  * scene isn't running (phones, reduced motion, short screens).
