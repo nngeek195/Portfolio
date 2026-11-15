@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Placeholder certificate image">
+  <!-- PLACEHOLDER: cert-image — shown when a certificate has no image or it fails to load -->
+  <rect width="400" height="300" fill="#14171A"/>
+  <rect x="24" y="24" width="352" height="252" fill="none" stroke="#2A3036" stroke-width="4" stroke-dasharray="12 8"/>
+  <circle cx="200" cy="120" r="34" fill="none" stroke="#8A9199" stroke-width="6"/>
+  <path d="M182 150l-12 50 30-16 30 16-12-50" fill="none" stroke="#8A9199" stroke-width="6" stroke-linejoin="round"/>
+  <text x="200" y="250" text-anchor="middle" font-family="monospace" font-size="20" letter-spacing="4" fill="#FFB020">NO IMAGE</text>
+</svg>

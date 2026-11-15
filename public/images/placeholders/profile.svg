@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Placeholder profile photo">
+  <!-- PLACEHOLDER: profile-photo — upload real photos in /admin/dashboard/media -->
+  <rect width="400" height="400" fill="#14171A"/>
+  <circle cx="200" cy="160" r="70" fill="#2A3036"/>
+  <path d="M70 360c10-80 70-120 130-120s120 40 130 120z" fill="#2A3036"/>
+  <rect x="0" y="292" width="400" height="44" fill="#07080A" opacity=".85"/>
+  <text x="200" y="321" text-anchor="middle" font-family="monospace" font-size="20" letter-spacing="4" fill="#FFB020">PLACEHOLDER</text>
+</svg>

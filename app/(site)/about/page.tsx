@@ -9,7 +9,7 @@ export default function AboutPage() {
 
   // Mock data - will be replaced by Firestore fetch: db.collection('curated_content').where('category', '==', 'certificate')
   const certificates = [
-    { id: 1, title: 'Networking Basics', issuer: 'Cisco', mediaUrls: ['/Images/cert-placeholder.jpg'], description: 'Completed fundamentals of network architecture.' }
+    { id: 1, title: 'Networking Basics', issuer: 'Cisco', mediaUrls: ['/images/placeholders/cert.svg'], description: 'Completed fundamentals of network architecture.' }
   ];
 
   return (
@@ -30,7 +30,7 @@ export default function AboutPage() {
         </div>
         <div className="md:w-1/2 flex justify-center">
           <div className="w-64 h-64 rounded-full border-4 border-cyan-500 shadow-[0_0_30px_rgba(0,255,234,0.5)] overflow-hidden">
-             <img src="/Images/profile.jpg" alt="Niranga Kumara" className="w-full h-full object-cover" />
+             <img src="/images/placeholders/profile.svg" /* PLACEHOLDER: about-page — orphaned page, see PLACEHOLDERS.md */ alt="Niranga Kumara" className="w-full h-full object-cover" />
           </div>
         </div>
       </section>
