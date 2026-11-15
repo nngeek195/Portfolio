@@ -10,6 +10,8 @@ declare global {
     __bootExitAt?: number;
     /** performance.now() when the preloader was fully gone. */
     __bootDoneAt?: number;
+    /** Set when BootController has taken over (the inline script's hard cap then stands down). */
+    __bootCtl?: boolean;
   }
 }
 

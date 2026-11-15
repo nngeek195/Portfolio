@@ -25,7 +25,10 @@ const CHAR_MS = 18;
 
 // Decides before first paint: show on the first load of a session or with ?preload=1;
 // the simple version for reduced motion, small screens and FX: LITE (localStorage "fx").
-const INLINE = `(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search),f=q.get('preload')==='1';if(f||!sessionStorage.getItem('boot:seen')){sessionStorage.setItem('boot:seen','1');d.setAttribute('data-boot','on');var m=window.matchMedia;if(m('(prefers-reduced-motion: reduce)').matches||!m('(min-width: 1024px) and (min-height: 600px)').matches||localStorage.getItem('fx')==='lite')d.setAttribute('data-boot-lite','')}}catch(e){}})();`;
+// It also enforces the 4 s hard cap on its own: on a slow device the app may not
+// have hydrated by then, and the site must show anyway (simple fade; the app
+// takes over normally if it hydrates first, setting window.__bootCtl).
+const INLINE = `(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search),f=q.get('preload')==='1';if(f||!sessionStorage.getItem('boot:seen')){sessionStorage.setItem('boot:seen','1');d.setAttribute('data-boot','on');var m=window.matchMedia;if(m('(prefers-reduced-motion: reduce)').matches||!m('(min-width: 1024px) and (min-height: 600px)').matches||localStorage.getItem('fx')==='lite')d.setAttribute('data-boot-lite','');setTimeout(function(){if(d.getAttribute('data-boot')!=='on'||window.__bootCtl)return;window.__bootExitAt=performance.now();d.setAttribute('data-boot','exit');setTimeout(function(){d.setAttribute('data-boot','done');window.__bootDoneAt=performance.now();window.dispatchEvent(new Event('boot:done'))},450)},Math.max(0,4000-performance.now()))}}catch(e){}})();`;
 
 function TypedLine({ index, label }: { index: number; label: string }) {
   const start = LINE_START + index * LINE_GAP;
