@@ -4,6 +4,7 @@ import { LOADOUT } from '@/lib/loadout';
 import type { CertificateCard } from '@/components/home/CertificateGrid';
 import ChatWidget from '@/components/home/ChatWidget';
 import HudOverlay from '@/components/hud/HudOverlay';
+import ThreeProvider from '@/components/three/ThreeProvider';
 import Hero from '@/components/sections/Hero';
 import PersonnelFile from '@/components/sections/PersonnelFile';
 import Loadout from '@/components/sections/Loadout';
@@ -39,8 +40,10 @@ export default async function HomePage() {
     { label: 'Skills loaded', value: LOADOUT.reduce((n, m) => n + m.skills.length, 0) },
   ];
 
+  // ThreeProvider: decides if real-time 3D runs and lazy-mounts the shared canvas
+  // (nothing 3D is downloaded until a 3D section is about one screen away).
   return (
-    <>
+    <ThreeProvider>
       <Hero />
       <PersonnelFile profileImages={profile.profileImages} intervalSeconds={profile.intervalSeconds} />
       <Loadout />
@@ -51,6 +54,6 @@ export default async function HomePage() {
       <Debrief stats={stats} />
       <ChatWidget />
       <HudOverlay />
-    </>
+    </ThreeProvider>
   );
 }
