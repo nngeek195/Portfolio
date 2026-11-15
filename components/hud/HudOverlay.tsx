@@ -101,8 +101,8 @@ export default function HudOverlay() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-30 hidden select-none font-mono text-[10px] tracking-[0.2em] text-ash/80 min-[1440px]:block"
     >
-      {/* Compass: a window over a strip that slides with scroll progress */}
-      <div className="absolute left-1/2 top-[74px] w-[420px] -translate-x-1/2 opacity-80">
+      {/* Compass (bottom centre, clear of pinned stages): a window over a strip that slides with scroll progress */}
+      <div className="absolute bottom-4 left-1/2 w-[420px] -translate-x-1/2 opacity-80">
         <div className="relative h-8 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_18%,#000_82%,transparent)]">
           <div data-hud="compass" className="absolute left-1/2 top-0 flex will-change-transform">
             {COMPASS_TICKS.map((d) => {

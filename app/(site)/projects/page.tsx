@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getProjects } from '@/lib/content';
 import ProjectList from '@/components/content/ProjectList';
+import PageHeader from '@/components/ui/PageHeader';
 
 export const revalidate = 300;
 
@@ -9,21 +10,28 @@ export const metadata: Metadata = {
   description: "Things I've built: software projects with full write-ups and READMEs.",
 };
 
+const byDateDesc = (a: { publishedAt?: string }, b: { publishedAt?: string }) => String(b.publishedAt ?? '').localeCompare(String(a.publishedAt ?? ''));
+
 export default async function ProjectsPage() {
-  const projects = await getProjects();
+  // Featured projects first (admin order), then the rest newest first.
+  const projects = (await getProjects()).sort(
+    (a, b) =>
+      Number(!!b.featured) - Number(!!a.featured) ||
+      (a.featuredOrder ?? Infinity) - (b.featuredOrder ?? Infinity) ||
+      byDateDesc(a, b)
+  );
 
   return (
-    <div className="pt-32 pb-24 px-6 md:px-20">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-12 border-b border-gray-800 pb-6">
-          <p className="text-cyan-500 text-sm font-semibold tracking-wide uppercase mb-2">Portfolio</p>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-            Featured Projects
-          </h1>
-          <p className="text-slate-400 mt-4 max-w-2xl">
-            A selection of things I&apos;ve built — click any card for the full write-up.
-          </p>
-        </div>
+    <div className="topo-lines">
+      <PageHeader
+        code="ARCHIVE"
+        plain="Projects"
+        title="All operations"
+        intro="Everything I've built, filed as mission briefings. Open one for the full write-up and README."
+        count={projects.length}
+        countLabel="Operations on file"
+      />
+      <div className="mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-20">
         <ProjectList projects={projects} />
       </div>
     </div>

@@ -233,3 +233,43 @@ body {
   from { opacity: 0; scale: 1.03; }
   to { opacity: 1; scale: 1; }
 }
+
+/* ==========================================================================
+   Intel viewer content (public project/article popup)
+   ========================================================================== */
+.intel-prose a,
+.intel-readme.markdown-body a {
+  color: var(--color-nv);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.intel-prose p + p {
+  margin-top: 0.9em;
+}
+.intel-readme.markdown-body {
+  background: transparent;
+  color: color-mix(in srgb, var(--color-bone) 90%, transparent);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+.intel-readme.markdown-body h1,
+.intel-readme.markdown-body h2,
+.intel-readme.markdown-body h3 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-bone);
+  border-color: var(--color-steel);
+}
+.intel-readme.markdown-body pre,
+.intel-readme.markdown-body code {
+  font-family: var(--font-mono);
+  background: var(--color-void);
+}
+.intel-readme.markdown-body table tr,
+.intel-readme.markdown-body table td,
+.intel-readme.markdown-body table th,
+.intel-readme.markdown-body hr {
+  background: transparent;
+  border-color: var(--color-steel);
+}
