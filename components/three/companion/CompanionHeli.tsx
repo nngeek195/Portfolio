@@ -204,10 +204,10 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
     r.scrollV = damp(r.scrollV, scrolled / Math.max(delta, 1e-3), 6, dt);
     r.lastScroll = sy;
 
-    // Heading target. Side view keeps yaw in [-PI, 0] so turns pass through a front view.
+    // Heading target comes from the pose only (never from the direction of travel, so the same
+    // scroll position always gives the same heading). Side view keeps yaw in [-PI, 0] so turns
+    // pass through a front view.
     if (pose.yaw !== undefined) r.yawTarget = pose.yaw;
-    else if (r.vx > 60) r.yawTarget = 0;
-    else if (r.vx < -60) r.yawTarget = Math.PI;
     let yawT = wrapPi(r.yawTarget);
     if (topDown < 0.5) {
       if (yawT > 0) yawT = -yawT;
@@ -219,14 +219,17 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
       Object.assign(r, { x: pose.x, y: pose.y, size: pose.size, yaw: yawT, topDown, lx: pose.lightX ?? pose.x, ly: pose.lightY ?? H, started: true });
     }
     const px = r.x, py = r.y, pyaw = r.yaw;
+    const vdt = Math.max(dt, 1e-3); // frames can arrive with a zero delta: never divide by it (NaN would stick)
     r.x = damp(r.x, pose.x, k, dt);
     r.y = damp(r.y, pose.y, k, dt);
     r.size = damp(r.size, pose.size, k, dt);
     r.topDown = damp(r.topDown, topDown, 3, dt);
     r.yaw = damp(r.yaw, yawT, 3.2, dt);
-    r.vx = damp(r.vx, (r.x - px) / dt, 8, dt);
-    r.vy = damp(r.vy, (r.y - py) / dt, 8, dt);
-    r.yawRate = damp(r.yawRate, (r.yaw - pyaw) / dt, 6, dt);
+    r.vx = damp(r.vx, (r.x - px) / vdt, 8, dt);
+    r.vy = damp(r.vy, (r.y - py) / vdt, 8, dt);
+    r.yawRate = damp(r.yawRate, (r.yaw - pyaw) / vdt, 6, dt);
+    // Keep the side-view heading bounded after map-view turns (shortest-arc turns can wind it up).
+    if (r.topDown < 0.02 && Math.abs(r.yaw) > Math.PI * 1.5) r.yaw = wrapPi(r.yaw);
 
     // Attitude from motion: lean into travel (nose down), bank into turns and with scroll direction.
     const side = 1 - r.topDown;

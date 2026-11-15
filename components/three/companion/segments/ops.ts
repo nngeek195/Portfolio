@@ -1,5 +1,5 @@
 import { OPS_HELI_X } from '@/lib/motion/heli';
-import { lerp, setFlag, smoothstep, type DirectorContext, type Pose } from '../types';
+import { lerp, setFlag, smoothstep, type Claim, type DirectorContext } from '../types';
 
 // Waypoint inside each card: banner centre (header ~42px + half the 160px banner), alternating up / down.
 const LZ_Y = 122;
@@ -14,12 +14,13 @@ let lastDone = '';
  * track scrolls under it, turning to face each leg, with a dotted route trail.
  * The card it is over lights up as the active LZ.
  */
-export function ops({ W, H, rect }: DirectorContext): Pose | null {
+export function ops({ W, H, rect }: DirectorContext): Claim | null {
   const pin = rect('#operations [data-ops="pin"]');
   const track = rect('#operations [data-ops="track"]');
   if (!pin || !track) return null;
   const d = Math.abs(pin.top + pin.height / 2 - H / 2) / H;
-  if (d > 0.75) return clear();
+  const weight = 1 - smoothstep(0.42, 0.8, d);
+  if (weight <= 0) return clear();
 
   const cards = Array.from(document.querySelectorAll<HTMLElement>('#operations [data-lz]'));
   const n = cards.length;
@@ -57,14 +58,18 @@ export function ops({ W, H, rect }: DirectorContext): Pose | null {
 
   const topDown = 1 - smoothstep(0.18, 0.5, d);
   return {
-    x,
-    y: lerp(H * 0.4, y, smoothstep(0.75, 0.35, d)),
-    size: Math.min(170, W * 0.11),
-    yaw: topDown > 0.5 ? heading : undefined,
-    topDown,
-    shadow: topDown,
-    light: 0,
-    lambda: 6,
+    weight,
+    pose: {
+      x,
+      y,
+      size: Math.min(170, W * 0.11),
+      // Before it tips over to the map view it faces along the track (right), then follows each leg.
+      yaw: topDown > 0.5 ? heading : 0,
+      topDown,
+      shadow: topDown,
+      light: 0,
+      lambda: 6,
+    },
   };
 }
 

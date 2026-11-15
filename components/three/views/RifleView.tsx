@@ -6,7 +6,7 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { LOADOUT } from '@/lib/loadout';
 import { model } from '@/lib/models';
-import { loadoutApproach } from '@/lib/motion/heli';
+import { loadoutApproach, rifleDropLanded } from '@/lib/motion/heli';
 import { sceneProgress } from '@/lib/motion/scene-progress';
 import { dbg, dbgEvent } from '@/lib/debug';
 import { prepareModel, setGlow } from '../nightVision';
@@ -81,7 +81,7 @@ function Rifle({ onReady }: { onReady: () => void }) {
         if (!part || !home || !off) continue;
         const loose = 1 - assembled;
         const bob = Math.sin(t * 1.4 + i) * 0.006 * loose;
-        const landed = smooth(THREE.MathUtils.clamp((approach - 0.52 - i * 0.04) / 0.26, 0, 1));
+        const landed = rifleDropLanded(approach, i);
         const fall = (1 - landed) * DROP_HEIGHT;
         part.position.set(home.x + off[0] * loose, home.y + off[1] * loose + bob + fall, home.z + off[2] * loose);
       }
@@ -93,7 +93,7 @@ function Rifle({ onReady }: { onReady: () => void }) {
     if (expected >= 0)
       LOADOUT.forEach((module, i) => {
         const assembled = smooth(THREE.MathUtils.clamp(expected * n - i, 0, 1));
-        const landed = smooth(THREE.MathUtils.clamp((approach - 0.52 - i * 0.04) / 0.26, 0, 1));
+        const landed = rifleDropLanded(approach, i);
         for (const name of module.modelParts) {
           const part = parts.get(name), home = base.get(name), off = EXPLODE[name];
           if (!part || !home || !off) continue;

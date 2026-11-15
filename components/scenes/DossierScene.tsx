@@ -8,9 +8,6 @@ import { registerScene } from '@/lib/motion/scene-progress';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-// Shared with the Phase 4 3D pistol (field-strip follows the redaction).
-export const DOSSIER_PROGRESS_EVENT = 'dossier:progress';
-export type DossierProgressDetail = { progress: number };
 
 /**
  * OBJ-02 Personnel File (desktop scene). Pins the dossier + sidearm and scrubs:
@@ -47,8 +44,6 @@ export default function DossierScene() {
           pin: true,
           scrub: 0.5,
           invalidateOnRefresh: true,
-          onUpdate: (self) =>
-            window.dispatchEvent(new CustomEvent<DossierProgressDetail>(DOSSIER_PROGRESS_EVENT, { detail: { progress: self.progress } })),
         },
       });
 

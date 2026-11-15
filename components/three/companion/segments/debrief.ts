@@ -1,4 +1,4 @@
-import { clamp01, easeInOut, easeOut, lerp, smoothstep, type DirectorContext, type Pose } from '../types';
+import { clamp01, easeInOut, easeOut, lerp, smoothstep, type Claim, type DirectorContext } from '../types';
 
 /**
  * Debrief: lift-off. Idling on the pad as the section arrives, the rotor
@@ -7,10 +7,13 @@ import { clamp01, easeInOut, easeOut, lerp, smoothstep, type DirectorContext, ty
  * grade powers down. Tied to the last stretch of the page so it always
  * completes at the bottom.
  */
-export function debrief({ W, H, scrollY, maxScroll, rect }: DirectorContext): Pose | null {
+export function debrief({ W, H, scrollY, maxScroll, rect }: DirectorContext): Claim | null {
   const sec = rect('#debrief');
   const pad = rect('#debrief [data-debrief="pad"]');
-  if (!sec || !pad || sec.top > H * 0.9) return null;
+  if (!sec || !pad) return null;
+  // Takes over from Comms as Debrief comes up (overlapping blend, no gap).
+  const weight = smoothstep(H * 0.95, H * 0.55, sec.top);
+  if (weight <= 0) return null;
 
   const start = sec.top + scrollY - H * 0.9;
   const p = clamp01((scrollY - start) / Math.max(1, maxScroll - start));
@@ -21,6 +24,8 @@ export function debrief({ W, H, scrollY, maxScroll, rect }: DirectorContext): Po
   const c = easeInOut(smoothstep(0.22, 1, p));
   const lift = smoothstep(0.22, 0.4, p);
   return {
+    weight,
+    pose: {
     x: lerp(padX, W * 0.88, c),
     y: lerp(padY, H * 0.1, c) - lift * 10,
     size: lerp(size0, 34, easeOut(c)),
@@ -35,5 +40,6 @@ export function debrief({ W, H, scrollY, maxScroll, rect }: DirectorContext): Po
     bright: lerp(1, 0.3, smoothstep(0.6, 1, p)),
     light: 0,
     lambda: 6,
+    },
   };
 }

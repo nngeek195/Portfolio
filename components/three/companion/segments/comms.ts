@@ -1,4 +1,5 @@
-import { arrival, clamp01, easeOut, lerp, setFlag, smoothstep, type DirectorContext, type Pose } from '../types';
+import { arrival, clamp01, easeOut, lerp, setFlag, smoothstep, type Claim, type DirectorContext } from '../types';
+import { patrolSize, stationX } from './patrol';
 
 /**
  * Comms (exfil): full landing sequence into the extraction panel as the
@@ -7,23 +8,25 @@ import { arrival, clamp01, easeOut, lerp, setFlag, smoothstep, type DirectorCont
  * downwash; the searchlight locks onto TRANSMIT. Hovering a channel makes it
  * dip towards it.
  */
-export function comms({ t, W, H, rect, signals }: DirectorContext): Pose | null {
+export function comms({ t, W, H, gutter, rect, signals }: DirectorContext): Claim | null {
   const section = rect('#contact');
   const lz = rect('#contact [data-comms="lz"]');
   const transmitEl = document.querySelector('#contact [data-comms="transmit"]');
-  if (!section || !lz || section.top > H || section.bottom < H * 0.2) {
+  const p = section ? arrival(section, H) : 0;
+  const weight = section && lz ? smoothstep(0, 0.12, p) : 0;
+  if (!section || !lz || weight <= 0) {
     setFlag(transmitEl, 'data-locked', false);
     return null;
   }
-  const p = arrival(section, H);
   const size = Math.min(lz.width * 0.8, 470);
   const padX = lz.left + lz.width / 2;
   const padY = lz.bottom - lz.height * 0.14 - 12;
   const hoverY = padY - size * 0.24;
 
+  // Descent from the right-hand station (where patrol hands it over), on screen throughout.
   const d = easeOut(clamp01(p / 0.55));
-  let x = lerp(padX + W * 0.35, padX, d);
-  let y = lerp(-size * 0.6, hoverY - size * 0.22, d);
+  let x = lerp(stationX('right', W, gutter, patrolSize(W, gutter)), padX, d);
+  let y = lerp(H * 0.2, hoverY - size * 0.22, d);
   const settle = smoothstep(0.5, 0.82, p);
   y = lerp(y, hoverY, settle) + Math.sin(t * 1.7) * 4 * settle;
   const flare = Math.sin(Math.PI * clamp01((p - 0.38) / 0.3)) * 0.24;
@@ -44,9 +47,11 @@ export function comms({ t, W, H, rect, signals }: DirectorContext): Pose | null 
   setFlag(transmitEl, 'data-locked', lock > 0.6);
   const target = transmitEl?.getBoundingClientRect();
   return {
+    weight,
+    pose: {
     x,
     y,
-    size,
+    size: lerp(patrolSize(W, gutter), size, smoothstep(0, 0.4, p)),
     yaw: Math.PI,
     pitch,
     roll,
@@ -57,5 +62,6 @@ export function comms({ t, W, H, rect, signals }: DirectorContext): Pose | null 
     groundY: padY,
     shadow: 0.25 + 0.6 * settle,
     lambda: 5,
+    },
   };
 }

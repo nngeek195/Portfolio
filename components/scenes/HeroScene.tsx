@@ -4,7 +4,6 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
-import { HERO_PROGRESS_EVENT, type HeroProgressDetail } from '@/lib/motion/heli';
 import { registerScene } from '@/lib/motion/scene-progress';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -15,8 +14,8 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  *   0.45–0.70  goggles flip up: night-vision green drains to grey (NVG: OFF)
  *   0.72–1.00  eyelids close to a balaclava eye slit, handing over to the dossier
  * Markup hooks are data-hero="…" attributes in components/sections/Hero.tsx.
- * Emits HERO_PROGRESS_EVENT; the live 3D helicopter (when running) follows the
- * still's animated position, so the still keeps animating even when hidden.
+ * Registers its trigger (lib/motion/scene-progress); the live 3D helicopter follows
+ * the still's animated position, so the still keeps animating even when hidden.
  */
 export default function HeroScene() {
   useGSAP(() => {
@@ -41,7 +40,6 @@ export default function HeroScene() {
           scrub: 0.6,
           onUpdate: (self) => {
             if (nvg) nvg.textContent = self.progress > 0.52 ? 'OFF' : 'ON';
-            window.dispatchEvent(new CustomEvent<HeroProgressDetail>(HERO_PROGRESS_EVENT, { detail: { progress: self.progress } }));
           },
         },
       });

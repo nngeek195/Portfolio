@@ -1,9 +1,5 @@
 // Shared constants for the companion helicopter (components/three/companion).
 
-/** Hero pinned-scene progress (0..1), emitted by HeroScene. */
-export const HERO_PROGRESS_EVENT = 'hero:progress';
-export type HeroProgressDetail = { progress: number };
-
 /** In Operations the helicopter holds this fraction of the viewport width while the map scrolls under it. */
 export const OPS_HELI_X = 0.3;
 
@@ -17,4 +13,14 @@ export const HELI_LIVE_ATTR = 'data-heli-live';
  */
 export function loadoutApproach(stageTop: number, viewportHeight: number) {
   return Math.min(1, Math.max(0, (viewportHeight - stageTop) / (viewportHeight - 88)));
+}
+
+/**
+ * Air drop: how far rifle module `i` has come down (0 = still up, 1 = landed)
+ * at a given approach value. Timed to the helicopter's right-to-left pass
+ * over the rifle (it is over the right-hand half around approach 0.2–0.6).
+ */
+export function rifleDropLanded(approach: number, i: number) {
+  const t = Math.min(1, Math.max(0, (approach - 0.22 - i * 0.06) / 0.28));
+  return t * t * (3 - 2 * t);
 }

@@ -10,7 +10,7 @@ export type Pose = {
   /**
    * Heading. Side view: 0 = nose right, PI = nose left (turns through a front
    * view). Top-down: screen angle, counter-clockwise from "right" (y up).
-   * Undefined = follow the direction of travel.
+   * Required from every segment (no velocity-following: the pose must not depend on scroll direction).
    */
   yaw?: number;
   /** Extra nose-up pitch, radians (flare, lean). */
@@ -53,13 +53,18 @@ export type DirectorContext = {
 };
 
 export type Signals = {
-  heroProgress: number;
-  dossierProgress: number;
-  /** Comms channel currently hovered (for the dip), if any. */
+  /** Comms channel currently hovered (for the dip), if any. Interaction, not scroll. */
   hovered: DOMRect | null;
 };
 
-export type Segment = (ctx: DirectorContext) => Pose | null;
+/**
+ * A section's claim on the helicopter at the current scroll position: how
+ * strongly it owns it (0..1, soft edges that overlap the neighbours' so there
+ * is never a gap) and where it wants it. Must be a pure function of the
+ * scroll position (DOM rects, scene progress), never of time-integrated state.
+ */
+export type Claim = { weight: number; pose: Pose };
+export type Segment = (ctx: DirectorContext) => Claim | null;
 
 export const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 export const lerp = (a: number, b: number, t: number) => a + (b - a) * t;

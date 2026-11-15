@@ -8,15 +8,13 @@ import { registerScene } from '@/lib/motion/scene-progress';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-// Shared with the Phase 4 3D rifle: current module + scrub progress.
-export const LOADOUT_PROGRESS_EVENT = 'loadout:progress';
-export type LoadoutProgressDetail = { progress: number; index: number };
 
 /**
  * OBJ-03 Loadout (desktop scene). Switches the section to its "stage" layout
  * (data-scene="on"), pins it and steps through the modules as you scroll:
  * module row, schematic marker and skill panel follow the active index, and a
- * blueprint scan line sweeps the rifle. Emits LOADOUT_PROGRESS_EVENT on window.
+ * blueprint scan line sweeps the rifle. Registers its trigger so the 3D rifle reads
+ * the same progress from the scroll position (lib/motion/scene-progress).
  */
 export default function LoadoutScene({ count }: { count: number }) {
   useGSAP(() => {
@@ -57,7 +55,6 @@ export default function LoadoutScene({ count }: { count: number }) {
         onUpdate: (self) => {
           const index = Math.min(count - 1, Math.floor(self.progress * count));
           activate(index);
-          window.dispatchEvent(new CustomEvent<LoadoutProgressDetail>(LOADOUT_PROGRESS_EVENT, { detail: { progress: self.progress, index } }));
         },
       });
       const unregister = registerScene('loadout', st);
