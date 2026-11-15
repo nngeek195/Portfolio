@@ -10,6 +10,7 @@ export default function Schematic({
   sizes,
   className = '',
   hideMarkersOnMobile = false,
+  reveal,
 }: {
   poster: ModelEntry['poster'];
   markers: { part: string; n: number; label: string }[];
@@ -18,9 +19,11 @@ export default function Schematic({
   className?: string;
   // Hide markers below the sm breakpoint, where the render is too small for them.
   hideMarkersOnMobile?: boolean;
+  // Optional scroll reveal (see components/motion/Reveals), e.g. "mask".
+  reveal?: 'mask' | 'up';
 }) {
   return (
-    <figure className={`relative ${className}`}>
+    <figure data-reveal={reveal} className={`relative ${className}`}>
       <Image src={poster.src} width={poster.width} height={poster.height} alt={alt} sizes={sizes} className="h-auto w-full" />
       <ol aria-hidden="true" className={hideMarkersOnMobile ? 'hidden sm:block' : undefined}>
         {markers.map((m) => {

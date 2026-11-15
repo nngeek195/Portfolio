@@ -3,6 +3,7 @@ import { hardcodedCertificates } from '@/lib/certificates';
 import { LOADOUT } from '@/lib/loadout';
 import type { CertificateCard } from '@/components/home/CertificateGrid';
 import ChatWidget from '@/components/home/ChatWidget';
+import HudOverlay from '@/components/hud/HudOverlay';
 import Hero from '@/components/sections/Hero';
 import PersonnelFile from '@/components/sections/PersonnelFile';
 import Loadout from '@/components/sections/Loadout';
@@ -49,6 +50,7 @@ export default async function HomePage() {
       <Comms />
       <Debrief stats={stats} />
       <ChatWidget />
+      <HudOverlay />
     </>
   );
 }

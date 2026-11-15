@@ -24,7 +24,7 @@ export default function PersonnelFile({ profileImages, intervalSeconds }: { prof
 
         <div className="grid gap-8 lg:grid-cols-12">
           {/* Dossier */}
-          <article className="clip-corner relative bg-gunmetal p-6 ring-1 ring-inset ring-steel md:p-10 lg:col-span-7">
+          <article data-reveal="up" className="clip-corner relative bg-gunmetal p-6 ring-1 ring-inset ring-steel md:p-10 lg:col-span-7">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-steel pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-ash">
               <span>File 02 {'//'} Personnel</span>
               <span className="flex items-center gap-4">
@@ -70,7 +70,7 @@ export default function PersonnelFile({ profileImages, intervalSeconds }: { prof
           </article>
 
           {/* Sidearm */}
-          <aside aria-labelledby="sidearm-title" className="clip-corner bg-[#0b0f13] p-6 ring-1 ring-inset ring-steel md:p-8 lg:col-span-5">
+          <aside data-reveal="up" aria-labelledby="sidearm-title" className="clip-corner bg-[#0b0f13] p-6 ring-1 ring-inset ring-steel md:p-8 lg:col-span-5">
             <div className="flex items-center justify-between border-b border-dashed border-steel pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-ash">
               <span id="sidearm-title">Personal sidearm</span>
               <span>Traits</span>
@@ -80,9 +80,10 @@ export default function PersonnelFile({ profileImages, intervalSeconds }: { prof
               alt="Schematic render of a pistol, with numbered parts matching the trait list"
               sizes="(min-width: 1024px) 420px, 90vw"
               className="mx-auto mt-8 max-w-md"
+              reveal="mask"
               markers={SIDEARM_TRAITS.map((t, i) => ({ part: t.part, n: i + 1, label: t.label }))}
             />
-            <ol className="mt-8 grid gap-3">
+            <ol data-reveal="stagger" className="mt-8 grid gap-3">
               {SIDEARM_TRAITS.map((t, i) => (
                 <li key={t.part} className="grid grid-cols-[2rem_6.5rem_1fr] items-baseline gap-2 border-b border-steel/50 pb-2">
                   <span className="font-mono text-xs text-nv">{String(i + 1).padStart(2, '0')}</span>

@@ -17,11 +17,19 @@ export default function ServiceRecord() {
       <div className="mx-auto max-w-5xl px-5 md:px-8">
         <SectionHeader id="experience" kicker="Operations log: roles, education and competitions, newest first." />
 
-        <ol className="relative border-l border-steel md:ml-32">
+        <div className="relative md:ml-32">
+          {/* Spine: steel base line + night-vision overlay drawn by scroll (Reveals: "spine") */}
+          <span aria-hidden="true" className="absolute inset-y-0 left-0 w-px bg-steel" />
+          <span aria-hidden="true" data-reveal="spine" className="absolute inset-y-0 left-0 w-px origin-top bg-nv shadow-[0_0_8px_rgb(124_255_91/0.6)]" />
+        <ol className="relative">
           {SERVICE_RECORD.map((e, i) => (
-            <li key={`${e.title}-${i}`} className="relative pb-12 pl-8 last:pb-0 md:pl-10">
+            <li key={`${e.title}-${i}`} data-reveal="up" className="relative pb-12 pl-8 last:pb-0 md:pl-10">
               {/* waypoint */}
-              <span aria-hidden="true" className="absolute -left-[7px] top-1.5 h-3.5 w-3.5 rotate-45 border border-nv bg-void" />
+              <span
+                aria-hidden="true"
+                data-waypoint
+                className="absolute -left-[7px] top-1.5 h-3.5 w-3.5 rotate-45 border border-nv bg-void transition-[background-color,box-shadow] duration-300 [&.is-lit]:bg-nv [&.is-lit]:shadow-[0_0_10px_rgb(124_255_91/0.8)]"
+              />
               {/* date column on wide screens */}
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-ash md:absolute md:-left-32 md:top-1 md:w-24 md:text-right">
                 {e.placeholder && e.date.startsWith('[') ? <Placeholder id={e.placeholder}>{e.date}</Placeholder> : e.date}
@@ -43,6 +51,7 @@ export default function ServiceRecord() {
             </li>
           ))}
         </ol>
+        </div>
       </div>
     </section>
   );

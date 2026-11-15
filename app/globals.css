@@ -32,6 +32,10 @@
 html {
   scroll-behavior: smooth;
 }
+/* Lenis drives smooth scrolling itself; native smooth-scroll would fight it. */
+html.lenis {
+  scroll-behavior: auto;
+}
 
 body {
   background: var(--background);
@@ -179,4 +183,53 @@ body {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* ==========================================================================
+   Hero load-in (CSS, so it plays at first paint — before JS hydrates).
+   Night-vision power-on: two quick, dim flashes (well under WCAG's
+   3-flashes-per-second limit), then content rises in sequence via --i.
+   Skipped entirely with prefers-reduced-motion.
+   ========================================================================== */
+.nv-flash {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-intro .nv-flash {
+    animation: nv-power-on 1.2s linear both;
+  }
+  .hero-intro .intro-up {
+    animation: intro-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(0.35s + var(--i, 0) * 0.09s);
+  }
+  .hero-intro .intro-heli {
+    animation: intro-heli 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .hero-intro .intro-frame {
+    animation: intro-frame 0.9s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@keyframes nv-power-on {
+  0% { opacity: 0.32; }
+  6% { opacity: 0; }
+  14% { opacity: 0.18; }
+  22%, 100% { opacity: 0; }
+}
+
+/* Uses `translate` (not `transform`) so GSAP parallax on the same element still works. */
+@keyframes intro-up {
+  from { opacity: 0; translate: 0 26px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes intro-heli {
+  from { opacity: 0; translate: 14vw -2vh; }
+  to { opacity: 0.9; translate: 0 0; }
+}
+
+@keyframes intro-frame {
+  from { opacity: 0; scale: 1.03; }
+  to { opacity: 1; scale: 1; }
 }

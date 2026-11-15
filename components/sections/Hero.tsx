@@ -9,9 +9,11 @@ import TacButton from '@/components/ui/TacButton';
 export default function Hero() {
   const heli = model('heli').poster;
   return (
-    <section id="top" aria-labelledby="hero-title" className="relative isolate flex min-h-[100svh] items-center overflow-hidden pt-16">
+    <section id="top" aria-labelledby="hero-title" className="hero-intro relative isolate flex min-h-[100svh] items-center overflow-hidden pt-16">
       {/* Sky + glow */}
       <div className="nv-sky absolute inset-0 -z-30" aria-hidden="true" />
+      {/* Night-vision power-on flash (CSS, once, on load; off with reduced motion) */}
+      <div className="nv-flash pointer-events-none absolute inset-0 z-10 bg-nv mix-blend-screen" aria-hidden="true" />
 
       {/* Helicopter flying over (pre-rendered silhouette of public/models/heli.glb) */}
       <Image
@@ -22,11 +24,12 @@ export default function Hero() {
         aria-hidden="true"
         preload
         sizes="(min-width: 1024px) 42vw, 80vw"
-        className="absolute right-[4%] top-[14%] -z-20 w-[80vw] max-w-[760px] -rotate-3 opacity-90 lg:w-[42vw]"
+        data-parallax="-180"
+        className="intro-heli absolute right-[4%] top-[14%] -z-20 w-[80vw] max-w-[760px] -rotate-3 opacity-90 lg:w-[42vw]"
       />
 
       {/* Ridge line */}
-      <svg aria-hidden="true" viewBox="0 0 1440 220" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 -z-10 h-[28vh] w-full">
+      <svg aria-hidden="true" data-parallax="40" viewBox="0 0 1440 220" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 -z-10 h-[28vh] w-full">
         <path d="M0 150 L120 120 L210 138 L330 92 L430 118 L560 70 L690 112 L820 84 L930 126 L1060 96 L1180 132 L1300 104 L1440 128 L1440 220 L0 220 Z" fill="#050806" />
         <path d="M0 185 L160 160 L300 176 L470 150 L620 172 L780 146 L950 170 L1120 152 L1290 176 L1440 160 L1440 220 L0 220 Z" fill="#030403" />
       </svg>
@@ -34,23 +37,23 @@ export default function Hero() {
       <div className="scanlines pointer-events-none absolute inset-0 -z-10 opacity-60" aria-hidden="true" />
 
       <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-5 py-16 md:px-8 lg:grid-cols-12">
-        <div className="lg:col-span-7">
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-xs uppercase tracking-[0.3em] text-nv">
+        <div className="lg:col-span-7" data-parallax="90">
+          <p style={{ '--i': 0 } as React.CSSProperties} className="intro-up flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-xs uppercase tracking-[0.3em] text-nv">
             <span>Operation</span>
             <span aria-hidden="true">{'//'}</span>
             {PROFILE.callsign ?? <Placeholder id="callsign">[CALLSIGN]</Placeholder>}
           </p>
 
-          <h1 id="hero-title" className="mt-5 font-display text-[clamp(4rem,13vw,10.5rem)] font-extrabold uppercase leading-[0.82] tracking-tight text-bone">
+          <h1 id="hero-title" style={{ '--i': 1 } as React.CSSProperties} className="intro-up mt-5 font-display text-[clamp(4rem,13vw,10.5rem)] font-extrabold uppercase leading-[0.82] tracking-tight text-bone">
             {PROFILE.firstName}
             <br />
             <span className="text-bone/90">{PROFILE.lastName}</span>
           </h1>
 
-          <p className="mt-6 font-stencil text-2xl uppercase tracking-[0.12em] text-bone md:text-3xl">{PROFILE.roles.join(' // ')}</p>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-ash">{PROFILE.heroIntro}</p>
+          <p style={{ '--i': 2 } as React.CSSProperties} className="intro-up mt-6 font-stencil text-2xl uppercase tracking-[0.12em] text-bone md:text-3xl">{PROFILE.roles.join(' // ')}</p>
+          <p style={{ '--i': 3 } as React.CSSProperties} className="intro-up mt-5 max-w-xl text-lg leading-relaxed text-ash">{PROFILE.heroIntro}</p>
 
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+          <div style={{ '--i': 4 } as React.CSSProperties} className="intro-up mt-10 flex flex-col gap-4 sm:flex-row">
             <TacButton href="#operations">View operations</TacButton>
             <TacButton href="#contact" variant="secondary">
               Open comms
@@ -59,7 +62,7 @@ export default function Hero() {
         </div>
 
         {/* Operator art */}
-        <div className="relative mx-auto w-full max-w-[260px] sm:max-w-sm lg:col-span-5 lg:max-w-none">
+        <div data-parallax="-70" style={{ '--i': 3 } as React.CSSProperties} className="intro-up relative mx-auto w-full max-w-[260px] sm:max-w-sm lg:col-span-5 lg:max-w-none">
           <div className="hud-corners relative aspect-[4/5] border border-dashed border-amber/50 bg-black/20 [--hud-c:var(--color-amber)]">
             <OperatorSilhouette />
             <div className="absolute inset-x-3 bottom-3">
@@ -74,7 +77,7 @@ export default function Hero() {
       </div>
 
       {/* Viewport HUD corners */}
-      <div className="hud-corners pointer-events-none absolute inset-x-4 bottom-4 top-20 [--hud-c:rgb(124_255_91/0.5)] [--hud-l:28px]" aria-hidden="true" />
+      <div className="intro-frame hud-corners pointer-events-none absolute inset-x-4 bottom-4 top-20 [--hud-c:rgb(124_255_91/0.5)] [--hud-l:28px]" aria-hidden="true" />
     </section>
   );
 }

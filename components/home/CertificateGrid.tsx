@@ -136,7 +136,7 @@ export default function CertificateGrid({ certificates, initial = 8 }: { certifi
 
   return (
     <>
-      <ul className={GRID}>
+      <ul data-reveal="stagger" className={GRID}>
         {shown.map((cert, i) => (
           <li key={cert.id}>
             <CommendationCard cert={cert} index={i} />

@@ -13,7 +13,7 @@ export default function Loadout() {
       <div className="mx-auto max-w-7xl px-5 md:px-8">
         <SectionHeader id="skills" kicker="My stack, mapped onto a primary weapon: each module of the rifle carries one group of skills." />
 
-        <div className="hud-corners relative px-2 py-10 [--hud-c:rgb(95_168_211/0.6)] md:px-10">
+        <div data-reveal="up" className="hud-corners relative px-2 py-10 [--hud-c:rgb(95_168_211/0.6)] md:px-10">
           <div className="mb-6 flex flex-wrap justify-between gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-blueprint/80">
             <span>Schematic // Primary</span>
             <span>{LOADOUT.length} modules · 18 skills</span>
@@ -23,12 +23,13 @@ export default function Loadout() {
             alt="Schematic render of a rifle, with numbered modules matching the skill groups below"
             sizes="(min-width: 1280px) 1100px, 92vw"
             className="mx-auto max-w-5xl"
+            reveal="mask"
             hideMarkersOnMobile
             markers={LOADOUT.map((m, i) => ({ part: m.anchor ?? m.part, n: i + 1, label: `${m.slot}: ${m.group}` }))}
           />
         </div>
 
-        <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ol data-reveal="stagger" className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {LOADOUT.map((m, i) => (
             <li key={m.part} className="clip-corner bg-void/80 p-6 ring-1 ring-inset ring-blueprint/25">
               <div className="flex items-baseline justify-between gap-3">

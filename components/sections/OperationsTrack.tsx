@@ -25,7 +25,7 @@ export default function OperationsTrack({ projects, articles, totalProjects }: {
         Swipe / scroll sideways <ArrowRight size={13} />
       </p>
       <div className="-mx-5 overflow-x-auto px-5 pb-6 no-scrollbar md:-mx-8 md:px-8" role="region" aria-label="Featured operations (scrolls sideways)" tabIndex={0}>
-        <ol className="flex snap-x snap-mandatory gap-5">
+        <ol data-reveal="stagger" className="flex snap-x snap-mandatory gap-5">
           {projects.map((p, i) => {
             const name = p.repoName || p.title || 'Untitled operation';
             const excerpt = p.description ? stripHtml(p.description) : '';
@@ -91,7 +91,7 @@ export default function OperationsTrack({ projects, articles, totalProjects }: {
               All reports <ArrowRight size={14} aria-hidden="true" />
             </Link>
           </div>
-          <ul className="grid gap-px bg-steel/60 ring-1 ring-steel/60 md:grid-cols-3">
+          <ul data-reveal="stagger" className="grid gap-px bg-steel/60 ring-1 ring-steel/60 md:grid-cols-3">
             {articles.map((a) => (
               <li key={a.id} className="bg-void">
                 <button type="button" onClick={() => setSelected({ item: a, type: 'article' })} className="group flex h-full w-full flex-col gap-3 p-5 text-left hover:bg-gunmetal">

@@ -18,7 +18,7 @@ export default function Comms() {
         <div>
           <SectionHeader id="contact" kicker="Open to opportunities, collaborations and a good conversation. Pick a channel." />
 
-          <ul className="grid gap-3">
+          <ul data-reveal="stagger" className="grid gap-3">
             <li>
               <a href={PROFILE.socials.linkedin} target="_blank" rel="noreferrer" className={channelClass}>
                 <span className="font-mono text-xs text-nv">CH-01</span>
@@ -67,7 +67,7 @@ export default function Comms() {
         </div>
 
         {/* Extraction */}
-        <div className="hud-corners relative min-h-[420px] overflow-hidden bg-[#06110a] [--hud-c:rgb(124_255_91/0.6)]" aria-hidden="true">
+        <div data-reveal="mask" className="hud-corners relative min-h-[420px] overflow-hidden bg-[#06110a] [--hud-c:rgb(124_255_91/0.6)]" aria-hidden="true">
           <div
             className="absolute inset-0"
             style={{
