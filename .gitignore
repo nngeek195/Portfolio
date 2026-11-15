@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# raw 3D model sources (large; optimized copies are built into public/models by `npm run models`).
+# CREDITS.md stays tracked so the attribution lives in version control.
+/Model/*
+!/Model/CREDITS.md

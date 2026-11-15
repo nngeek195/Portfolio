@@ -1,26 +1,959 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ==========================================================================
+   Design system — "Ghost" tactical theme
+   Palette: near-black base, gunmetal surfaces, bone text. Night-vision green,
+   amber and signal red are accents only (HUD states, warnings, REC).
+   ========================================================================== */
 
+/* Visibility tuning: page and panel lift (contrast checked: ash text stays
+   >= 5.3:1 on every surface, AA) and the film-grain strength over the 3D canvas.
+   Previous values: void #07080a, gunmetal #14171a, grain 0.07. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-void: #0c0e11;      /* page background */
+  --color-gunmetal: #1a1e22;  /* surfaces, cards */
+  --color-steel: #2a3036;     /* borders, dividers */
+  --color-ash: #8a9199;       /* secondary text (6.1:1 on void, 5.3:1 on gunmetal) */
+  --color-bone: #e8e4d9;      /* primary text (15:1 on void) */
+  --color-nv: #7cff5b;        /* night-vision accent, HUD active */
+  --color-olive: #4a5233;     /* muted military tint */
+  --color-amber: #ffb020;     /* warnings, placeholders */
+  --color-signal: #f24b40;    /* REC, critical, stamps (5.4:1 on void, 4.7:1 on gunmetal) [#e0362c: 4.4:1] */
+  --color-blueprint: #5fa8d3; /* Loadout schematic only */
+
+  --font-display: var(--font-display-face), "Arial Narrow", sans-serif;
+  --font-stencil: var(--font-stencil-face), var(--font-display-face), sans-serif;
+  --font-sans: var(--font-sans-face), system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: var(--color-void);
+  --foreground: var(--color-bone);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+/* Lenis drives smooth scrolling itself; native smooth-scroll would fight it.
+   !important: GSAP ScrollTrigger caches the base "smooth" before Lenis starts and
+   writes it back inline after every refresh, which made keyboard focus jumps
+   crawl across the page (and fight Lenis). */
+html.lenis {
+  scroll-behavior: auto !important;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-nv) 35%, transparent);
+  color: var(--color-bone);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-nv);
+  outline-offset: 3px;
+  /* Keyboard focus scrolling keeps the element clear of the fixed nav (64px) and the screen edge. */
+  scroll-margin-top: 88px;
+  scroll-margin-bottom: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@layer components {
+  /* Film grain over the whole site (static; pointer-events off). */
+  .film-grain::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    /* Sits over everything, including the 3D canvas: keep it subtle. [0.07] */
+    opacity: 0.045;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* CRT / night-vision scanlines. */
+  .scanlines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0) 0,
+      rgb(0 0 0 / 0) 2px,
+      rgb(0 0 0 / 0.28) 3px
+    );
+  }
+
+  /* Night-vision sky for the hero. */
+  .nv-sky {
+    background:
+      radial-gradient(ellipse 60% 55% at 68% 30%, rgb(124 255 91 / 0.22), transparent 70%),
+      radial-gradient(ellipse 90% 70% at 50% 100%, rgb(18 40 16 / 0.9), transparent 70%),
+      linear-gradient(to bottom, #0b1a0b 0%, #0a140a 45%, var(--color-void) 100%);
+  }
+
+  /* Blueprint grid for the Loadout schematic. */
+  .blueprint-grid {
+    background-color: #0c1219; /* [#070b0f] */
+    background-image:
+      linear-gradient(rgb(95 168 211 / 0.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(95 168 211 / 0.12) 1px, transparent 1px),
+      linear-gradient(rgb(95 168 211 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(95 168 211 / 0.05) 1px, transparent 1px);
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  }
+
+  /* Topographic contour lines for Operations. */
+  .topo-lines {
+    background-image:
+      repeating-radial-gradient(circle at 22% 35%, transparent 0 26px, rgb(232 228 217 / 0.05) 26px 27px),
+      repeating-radial-gradient(circle at 80% 75%, transparent 0 34px, rgb(232 228 217 / 0.04) 34px 35px);
+  }
+
+  /* Angled corners for buttons and cards. */
+  .clip-corner {
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  }
+  .clip-corner-sm {
+    clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+  }
+
+  /* HUD corner brackets: L-shaped ticks at all four corners. Colour via --hud-c. */
+  .hud-corners {
+    position: relative;
+    --hud-c: var(--color-steel);
+    --hud-l: 14px;
+  }
+  .hud-corners::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--hud-c), var(--hud-c)) top left / var(--hud-l) 1px no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) top left / 1px var(--hud-l) no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) top right / var(--hud-l) 1px no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) top right / 1px var(--hud-l) no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) bottom left / var(--hud-l) 1px no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) bottom left / 1px var(--hud-l) no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) bottom right / var(--hud-l) 1px no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) bottom right / 1px var(--hud-l) no-repeat;
+  }
+
+  /* Bracket hover: "[ LABEL ]" — brackets slide in on hover/focus. */
+  .bracket-hover {
+    position: relative;
+  }
+  .bracket-hover::before,
+  .bracket-hover::after {
+    position: absolute;
+    top: 50%;
+    opacity: 0;
+    transform: translateY(-50%);
+    transition: opacity 150ms ease, transform 150ms ease;
+    font-family: var(--font-mono);
+  }
+  .bracket-hover::before {
+    content: "[";
+    left: 0.6rem;
+    transform: translate(-6px, -50%);
+  }
+  .bracket-hover::after {
+    content: "]";
+    right: 0.6rem;
+    transform: translate(6px, -50%);
+  }
+  .bracket-hover:hover::before,
+  .bracket-hover:hover::after,
+  .bracket-hover:focus-visible::before,
+  .bracket-hover:focus-visible::after {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+
+  /* Hide horizontal scrollbars on swipe tracks but keep them scrollable. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Hero load-in (CSS, so it plays at first paint — before JS hydrates).
+   Night-vision power-on: two quick, dim flashes (well under WCAG's
+   3-flashes-per-second limit), then content rises in sequence via --i.
+   Skipped entirely with prefers-reduced-motion.
+   ========================================================================== */
+.nv-flash {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-intro .nv-flash {
+    animation: nv-power-on 1.2s linear both;
+  }
+  .hero-intro .intro-up {
+    animation: intro-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(0.35s + var(--i, 0) * 0.09s);
+  }
+  .hero-intro .intro-heli {
+    animation: intro-heli 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .hero-intro .intro-frame {
+    animation: intro-frame 0.9s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+/* Played once (HeroScene adds .intro-done): never replays when a refresh re-inserts the pinned hero. */
+.hero-intro.intro-done :is(.nv-flash, .intro-up, .intro-heli, .intro-frame) {
+  animation: none !important;
+}
+
+@keyframes nv-power-on {
+  0% { opacity: 0.32; }
+  6% { opacity: 0; }
+  14% { opacity: 0.18; }
+  22%, 100% { opacity: 0; }
+}
+
+/* Uses `translate` (not `transform`) so GSAP parallax on the same element still works. */
+@keyframes intro-up {
+  from { opacity: 0; translate: 0 26px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes intro-heli {
+  from { opacity: 0; translate: 14vw -2vh; }
+  to { opacity: 0.9; translate: 0 0; }
+}
+
+@keyframes intro-frame {
+  from { opacity: 0; scale: 1.03; }
+  to { opacity: 1; scale: 1; }
+}
+
+/* ==========================================================================
+   Boot preloader, "Establishing uplink" (components/boot). Shown only while
+   html[data-boot] is "on" / "exit" (set by its inline script before first
+   paint). Animates transform and opacity only; fixed overlay, no layout shift.
+   ========================================================================== */
+.boot {
+  display: none;
+}
+html[data-boot="on"] .boot,
+html[data-boot="exit"] .boot {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  color: var(--color-ash);
+  font-family: var(--font-mono);
+}
+/* Failsafe: if the app scripts never take over, get out of the way. */
+html[data-boot="on"] .boot {
+  animation: boot-failsafe 0.4s 9s forwards;
+}
+@keyframes boot-failsafe {
+  to { opacity: 0; visibility: hidden; }
+}
+/* Scroll lock while booting (set by BootController); stable gutter = no shift.
+   Lenis's stopped state uses overflow: clip, which ignores scrollbar-gutter, so
+   keep overflow: hidden here (or the page would be measured 15px too wide). */
+html.boot-lock,
+html.boot-lock.lenis-stopped,
+html[data-boot="on"].lenis-stopped,
+html[data-boot="exit"].lenis-stopped {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+/* The hero renders fully under the preloader (so LCP is the first paint) and
+   its intro (night-vision flash, copy rising in) restarts when the preloader exits. */
+html[data-boot="on"] .hero-intro .nv-flash,
+html[data-boot="on"] .hero-intro .intro-up,
+html[data-boot="on"] .hero-intro .intro-heli,
+html[data-boot="on"] .hero-intro .intro-frame {
+  animation: none !important;
+}
+
+.boot-visual,
+.boot-stage {
+  position: absolute;
+  inset: 0;
+}
+.boot-lid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50.5%;
+  background: #050607;
+  will-change: transform;
+}
+.boot-lid-top { top: 0; }
+.boot-lid-bottom { bottom: 0; }
+.boot-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  margin-top: -0.5px;
+  background: var(--color-nv);
+  box-shadow: 0 0 10px rgb(124 255 91 / 0.9), 0 0 28px rgb(124 255 91 / 0.35);
+  transform: scaleX(0);
+  animation: boot-line 0.6s 0.1s cubic-bezier(0.7, 0, 0.2, 1) forwards;
+}
+@keyframes boot-line {
+  to { transform: scaleX(1); }
+}
+
+/* Corner brackets draw in from their corners. */
+.boot-corner {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-color: rgb(124 255 91 / 0.6);
+  border-style: solid;
+  border-width: 0;
+  transform: scale(0);
+  animation: boot-pop 0.45s 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.boot-corner-tl { top: 20px; left: 20px; border-top-width: 1px; border-left-width: 1px; transform-origin: top left; }
+.boot-corner-tr { top: 20px; right: 20px; border-top-width: 1px; border-right-width: 1px; transform-origin: top right; }
+.boot-corner-bl { bottom: 20px; left: 20px; border-bottom-width: 1px; border-left-width: 1px; transform-origin: bottom left; }
+.boot-corner-br { bottom: 20px; right: 20px; border-bottom-width: 1px; border-right-width: 1px; transform-origin: bottom right; }
+@keyframes boot-pop {
+  to { transform: scale(1); }
+}
+
+.boot-hud {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: boot-in 0.4s 0.6s forwards;
+}
+.boot-hud-tl { top: 34px; left: 40px; }
+.boot-hud-tr { top: 34px; right: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+.boot-hud-bl { bottom: 34px; left: 40px; }
+.boot-rec { color: var(--color-signal); display: inline-flex; align-items: center; gap: 6px; }
+.boot-rec-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-signal);
+  animation: boot-blink 1.2s steps(2, jump-none) infinite;
+}
+@keyframes boot-in {
+  to { opacity: 1; }
+}
+@keyframes boot-blink {
+  50% { opacity: 0.15; }
+}
+
+/* Terminal: each character appears (opacity) on a schedule; status ticks to OK. */
+.boot-term {
+  position: absolute;
+  left: max(6vw, 48px);
+  bottom: calc(50% + 28px); /* sits above the CRT line, like a log scrolling up */
+  display: grid;
+  gap: 10px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: rgb(124 255 91 / 0.85);
+}
+.boot-li {
+  position: relative;
+  white-space: nowrap;
+}
+.boot-ch,
+.boot-status {
+  opacity: 0;
+  animation: boot-in 1ms var(--d) forwards;
+}
+/* Status cell: blinking dots, replaced in place by OK (or FLAT) when the line's
+   work is done. --ok-delay (set by the controller) waits for the typing to finish. */
+.boot-status {
+  display: inline-grid;
+  margin-left: 4px;
+}
+.boot-status > span {
+  grid-area: 1 / 1;
+  transition: opacity 0.12s var(--ok-delay, 0ms);
+}
+.boot-dots { color: var(--color-ash); }
+.boot-dots > i {
+  font-style: normal;
+  animation: boot-blink 0.9s infinite;
+}
+.boot-ok {
+  color: var(--color-bone);
+  opacity: 0;
+}
+.boot-li[data-state="ok"] .boot-dots { opacity: 0; }
+.boot-li[data-state="ok"] .boot-ok { opacity: 1; }
+
+/* Centre piece */
+.boot-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, calc(-50% + 70px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.boot-radar {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgb(124 255 91 / 0.08), rgb(5 6 7 / 0.95) 70%);
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(0.85);
+  animation: boot-radar-in 0.6s 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes boot-radar-in {
+  to { opacity: 1; transform: scale(1); }
+}
+.boot-radar svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+}
+.boot-radar-grid {
+  stroke: rgb(124 255 91 / 0.22);
+  stroke-width: 0.6;
+}
+.boot-radar-grid .major { stroke: rgb(124 255 91 / 0.6); }
+.boot-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: conic-gradient(from 0deg, rgb(124 255 91 / 0.42), rgb(124 255 91 / 0.08) 14%, transparent 26%);
+  animation: boot-spin 2.4s linear infinite;
+}
+@keyframes boot-spin {
+  to { transform: rotate(360deg); }
+}
+.boot-blip {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 9999px;
+  background: var(--color-nv);
+  box-shadow: 0 0 8px var(--color-nv);
+  opacity: 0;
+  animation: boot-blip 2.4s var(--b) ease-out infinite;
+}
+@keyframes boot-blip {
+  0% { opacity: 1; transform: scale(1.3); }
+  60%, 100% { opacity: 0; transform: scale(0.8); }
+}
+.boot-crosshair {
+  stroke: var(--color-nv);
+  stroke-width: 1.4;
+  transform: rotate(45deg) scale(1.6);
+  opacity: 0;
+  animation: boot-lockon 0.9s 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.boot-crosshair .lock {
+  stroke: var(--color-bone);
+  opacity: 0;
+  animation: boot-in 0.2s 1.8s forwards, boot-blink 0.5s 1.8s 3;
+}
+@keyframes boot-lockon {
+  to { opacity: 1; transform: rotate(0deg) scale(1); }
+}
+.boot-rotor .blades {
+  fill: rgb(232 228 217 / 0.9);
+  transform-origin: 100px 100px;
+  animation: boot-spin 0.36s linear infinite;
+}
+.boot-rotor .disc {
+  fill: rgb(124 255 91 / 0.18);
+  opacity: calc(0.2 + var(--boot-p, 0) * 0.8);
+  transition: opacity 0.3s;
+}
+.boot-rotor .hub { fill: var(--color-nv); }
+
+.boot-mark {
+  display: none;
+}
+.boot-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.boot-pct {
+  display: flex;
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 84px;
+  line-height: 0.9;
+  color: var(--color-bone);
+  font-variant-numeric: tabular-nums;
+}
+.boot-pct [data-boot-pct] {
+  display: inline-block;
+  width: 1.6em; /* fits "100": no shift as the digits change */
+  text-align: center;
+}
+.boot-pct-sign {
+  margin-left: 4px;
+  font-size: 28px;
+  color: var(--color-nv);
+}
+.boot-label {
+  position: relative;
+  display: grid;
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+.boot-label > span {
+  grid-area: 1 / 1;
+  text-align: center;
+}
+.boot-label-done {
+  color: var(--color-nv);
+  opacity: 0;
+}
+.boot-bar {
+  display: flex;
+  gap: 4px;
+}
+.boot-bar > span {
+  position: relative;
+  width: 14px;
+  height: 9px;
+  background: var(--color-steel);
+  transform: skewX(-18deg);
+}
+.boot-bar > span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-nv);
+  box-shadow: 0 0 6px rgb(124 255 91 / 0.8);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.boot-bar > span.on::after {
+  opacity: 1;
+}
+
+.boot-skip {
+  position: absolute;
+  right: 40px;
+  bottom: 30px;
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-bone);
+  background: rgb(26 30 34 / 0.8);
+  box-shadow: inset 0 0 0 1px var(--color-steel);
+  opacity: 0;
+  animation: boot-in 0.3s 0.8s forwards;
+}
+.boot-skip:hover,
+.boot-skip:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--color-nv);
+}
+
+/* ---- Exit ------------------------------------------------------------------
+   1. data-phase="locked": UPLINK ESTABLISHED flashes, the crosshair locks
+   2. html[data-boot="exit"]: the CRT line flares into the eye slit and the two
+      halves of the screen slide apart; the hero intro (night-vision flash, copy
+      rising) starts at that same moment.
+   [data-fast] (SKIP / Esc / Enter): the same opening, quicker. */
+.boot[data-phase="locked"] .boot-label-loading {
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.boot[data-phase="locked"] .boot-label-done {
+  animation: boot-established 0.56s linear forwards;
+}
+@keyframes boot-established {
+  0% { opacity: 0; }
+  12%, 38% { opacity: 1; }
+  50% { opacity: 0.25; }
+  62%, 100% { opacity: 1; }
+}
+.boot[data-phase="locked"] .boot-crosshair .lock {
+  stroke: var(--color-nv);
+}
+.boot[data-phase="locked"] .boot-pct {
+  color: var(--color-nv);
+  transition: color 0.2s;
+}
+html[data-boot="exit"] .boot {
+  pointer-events: none;
+}
+html[data-boot="exit"] .boot-stage {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+html[data-boot="exit"] .boot-skip {
+  animation: none; /* its fade-in fill would otherwise keep it visible */
+  opacity: 0;
+}
+html[data-boot="exit"] .boot-lid {
+  transition: transform 0.75s cubic-bezier(0.7, 0, 0.25, 1) 0.14s;
+}
+html[data-boot="exit"] .boot-lid-top { transform: translateY(-101%); }
+html[data-boot="exit"] .boot-lid-bottom { transform: translateY(101%); }
+html[data-boot="exit"] .boot-line {
+  animation: boot-slit 0.6s ease-out forwards;
+}
+@keyframes boot-slit {
+  0% { transform: scaleX(1) scaleY(1); opacity: 1; }
+  25% { transform: scaleX(1) scaleY(4); opacity: 1; }
+  100% { transform: scaleX(1.05) scaleY(1); opacity: 0; }
+}
+html[data-boot="exit"] .boot[data-fast] .boot-lid {
+  transition-duration: 0.38s;
+  transition-delay: 0s;
+}
+html[data-boot="exit"] .boot[data-fast] .boot-line {
+  animation-duration: 0.3s;
+}
+
+/* ---- Simple version: reduced motion, phones / small screens, FX: LITE -------
+   (html[data-boot-lite], set by the inline script). Logo, percentage and bar,
+   then a plain fade: no radar, typing, flashing, sliding or 3D downloads. */
+html[data-boot-lite] .boot-term,
+html[data-boot-lite] .boot-radar,
+html[data-boot-lite] .boot-corner,
+html[data-boot-lite] .boot-hud,
+html[data-boot-lite] .boot-line {
+  display: none;
+}
+html[data-boot-lite] .boot-lid {
+  background: var(--color-void);
+}
+html[data-boot-lite] .boot-core {
+  transform: translate(-50%, -50%);
+  gap: 16px;
+}
+html[data-boot-lite] .boot-mark {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  background: var(--color-bone);
+  color: var(--color-void);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+html[data-boot-lite] .boot-pct {
+  font-size: 56px;
+}
+html[data-boot-lite] .boot-bar > span {
+  width: 10px;
+  height: 6px;
+}
+html[data-boot-lite] .boot-skip {
+  right: 50%;
+  transform: translateX(50%);
+  bottom: 28px;
+}
+@media (hover: none) {
+  .boot-skip [aria-hidden] { display: none; } /* no Esc key on touch screens */
+}
+html[data-boot="exit"][data-boot-lite] .boot {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+html[data-boot="exit"][data-boot-lite] .boot-lid {
+  transform: none;
+  transition: none;
+}
+
+/* ==========================================================================
+   FX: LITE (lib/fx.ts, html[data-fx="lite"]): low-power mode. The overlays
+   below only ever darken or add noise, so dropping them never makes the page
+   darker; the 3D layer is off (flat renders, see lib/three-capability get3D).
+   ========================================================================== */
+html[data-fx="lite"] .film-grain::after {
+  content: none;
+}
+html[data-fx="lite"] .scanlines {
+  background-image: none;
+}
+/* Flat renders stand in for the lifted 3D models, with the same lift
+   (--fx-flat-lift = FLAT_LIFT in components/three/look.ts, from LOOK.nvGain):
+   - rifle / pistol schematics (shaded renders): brightness lift
+   - helicopter stills (black silhouettes, which brightness can't lift): shown
+     night-vision lit instead, a dim phosphor-green body with its edge glow,
+     like the graded 3D helicopter they replace. Full opacity (the Debrief one
+     is faded only as a backdrop to the 3D lift-off). */
+html[data-fx="lite"] [data-model-slot] img {
+  filter: brightness(var(--fx-flat-lift, 1.2));
+}
+html[data-fx="lite"] [data-heli-still] {
+  opacity: 1;
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(48deg) brightness(calc(0.42 * var(--fx-flat-lift, 1.2)))
+    drop-shadow(0 0 2px rgb(124 255 91 / 0.8)) drop-shadow(0 0 14px rgb(124 255 91 / 0.25));
+}
+/* The hero's sits on the bright night-vision sky (and FULL adds the searchlight there): lift it more. */
+html[data-fx="lite"] [data-hero="heli"] {
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(48deg) brightness(calc(0.62 * var(--fx-flat-lift, 1.2)))
+    drop-shadow(0 0 2px rgb(124 255 91 / 0.8)) drop-shadow(0 0 18px rgb(124 255 91 / 0.3));
+}
+
+/* ==========================================================================
+   Crosshair cursor (components/site/CrosshairCursor). Desktop mouse only:
+   html[data-crosshair] is set once a real mouse moves on a (hover: hover) and
+   (pointer: fine) device, so touch, pen, keyboard and no-JS keep the native
+   cursor. Text fields and the chat ([data-native-cursor]) keep theirs too.
+   ========================================================================== */
+.crosshair-layer {
+  display: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  html[data-crosshair] .crosshair-layer {
+    display: block;
+  }
+  html[data-crosshair],
+  html[data-crosshair] * {
+    cursor: none !important;
+  }
+  html[data-crosshair] :is(input, textarea, [contenteditable=""], [contenteditable="true"]),
+  html[data-crosshair] [data-native-cursor] :is(input, textarea) {
+    cursor: text !important;
+  }
+  html[data-crosshair] select,
+  html[data-crosshair] [data-native-cursor],
+  html[data-crosshair] [data-native-cursor] * {
+    cursor: default !important;
+  }
+  html[data-crosshair] [data-native-cursor] :is(a[href], button:not(:disabled), [role="button"]),
+  html[data-crosshair] [data-native-cursor] :is(a[href], button:not(:disabled), [role="button"]) * {
+    cursor: pointer !important;
+  }
+}
+.crosshair,
+.crosshair-brackets {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 120; /* above the film grain, modals and the boot preloader */
+  pointer-events: none;
+  will-change: transform;
+}
+.crosshair {
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  transition: opacity 0.12s;
+}
+.crosshair[data-state="hidden"] {
+  opacity: 0;
+}
+.crosshair svg {
+  overflow: visible;
+  /* Dark outline so it reads on bone buttons and light images as well as on the dark page. */
+  filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.95)) drop-shadow(0 0 2px rgb(0 0 0 / 0.6));
+}
+.crosshair-ticks {
+  stroke: var(--color-nv);
+  stroke-width: 1.5;
+  stroke-linecap: square;
+  transform-origin: 0 0;
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.18s;
+}
+.crosshair-dot {
+  fill: var(--color-nv);
+}
+/* Locked: the ticks pull in and fade, the brackets take over. */
+.crosshair[data-state="locked"] .crosshair-ticks {
+  transform: scale(0.55);
+  opacity: 0.35;
+}
+.crosshair-brackets {
+  opacity: 0;
+  transition:
+    transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.16s cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 0.16s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.12s;
+}
+html[data-crosshair] .crosshair-brackets[data-state="locked"] {
+  opacity: 1;
+}
+.crosshair-brackets > span {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 0 solid var(--color-nv);
+  filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.9));
+}
+.crosshair-brackets > span:nth-child(1) { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
+.crosshair-brackets > span:nth-child(2) { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
+.crosshair-brackets > span:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
+.crosshair-brackets > span:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .crosshair-brackets,
+  .crosshair-ticks {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Companion helicopter (components/three/companion). While the live 3D
+   helicopter flies, the flat stills it replaces fade out (they stay in the
+   layout: the hero still keeps animating as the 3D one's flight guide).
+   ========================================================================== */
+[data-heli-still] {
+  transition: opacity 0.7s ease;
+}
+html[data-heli-live] [data-heli-still] {
+  opacity: 0 !important;
+}
+/* Comms: the helicopter's searchlight has locked onto TRANSMIT. */
+.transmit-btn[data-locked] {
+  box-shadow: 0 0 0 1px rgb(124 255 91 / 0.9), 0 0 28px rgb(124 255 91 / 0.55);
+  animation: transmit-lock 1.4s ease-in-out infinite;
+}
+@keyframes transmit-lock {
+  50% { box-shadow: 0 0 0 1px rgb(124 255 91 / 0.5), 0 0 14px rgb(124 255 91 / 0.25); }
+}
+/* Operations tactical map: route + landing-zone markers only while the 3D helicopter flies. */
+.ops-route,
+.lz-mark {
+  display: none;
+}
+html[data-heli-live] .ops-route,
+html[data-heli-live] .lz-mark {
+  display: grid;
+}
+.lz-mark {
+  color: rgb(124 255 91 / 0.55);
+  border-color: rgb(124 255 91 / 0.4);
+  background: rgb(7 8 10 / 0.35);
+  transition: color 0.3s, border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
+[data-lz-active] .lz-mark {
+  color: var(--color-nv);
+  border-style: solid;
+  border-color: var(--color-nv);
+  background: rgb(124 255 91 / 0.12);
+  box-shadow: 0 0 18px rgb(124 255 91 / 0.45);
+}
+[data-lz] > article {
+  transition: box-shadow 0.3s;
+}
+html[data-heli-live] [data-lz-active] > article {
+  box-shadow: inset 0 0 0 1px rgb(124 255 91 / 0.75), inset 0 0 40px rgb(124 255 91 / 0.08);
+}
+
+/* ==========================================================================
+   404 "LZ NOT FOUND": helicopter circling the empty landing zone (CSS only).
+   Pseudo-3D orbit: nearer (lower) = larger; it turns at each end of the loop.
+   ========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  .lz404-orbit {
+    animation: lz404-orbit 9s linear infinite;
+  }
+  .lz404-heli {
+    animation: lz404-face 9s linear infinite;
+  }
+  .lz404-sweep {
+    background: conic-gradient(from 0deg, rgb(124 255 91 / 0.22), transparent 18%);
+    animation: lz404-sweep 3s linear infinite;
+  }
+}
+@keyframes lz404-orbit {
+  0% { translate: -95% 0; scale: 0.8; }
+  12.5% { translate: -67% 9vh; scale: 0.95; }
+  25% { translate: -50% 12vh; scale: 1.05; }
+  37.5% { translate: -33% 9vh; scale: 0.95; }
+  50% { translate: -5% 0; scale: 0.8; }
+  62.5% { translate: -33% -7vh; scale: 0.62; }
+  75% { translate: -50% -9vh; scale: 0.55; }
+  87.5% { translate: -67% -7vh; scale: 0.62; }
+  100% { translate: -95% 0; scale: 0.8; }
+}
+/* Nose right on the near pass, nose left on the far pass; squeezes through a turn at each end. */
+@keyframes lz404-face {
+  0%, 100% { transform: scaleX(0); }
+  6%, 44% { transform: scaleX(1); }
+  50% { transform: scaleX(0); }
+  56%, 94% { transform: scaleX(-1); }
+}
+@keyframes lz404-sweep {
+  to { rotate: 360deg; }
+}
+
+/* ==========================================================================
+   Intel viewer content (public project/article popup)
+   ========================================================================== */
+.intel-prose a,
+.intel-readme.markdown-body a {
+  color: var(--color-nv);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.intel-prose p + p {
+  margin-top: 0.9em;
+}
+.intel-readme.markdown-body {
+  background: transparent;
+  color: color-mix(in srgb, var(--color-bone) 90%, transparent);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+.intel-readme.markdown-body h1,
+.intel-readme.markdown-body h2,
+.intel-readme.markdown-body h3 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-bone);
+  border-color: var(--color-steel);
+}
+.intel-readme.markdown-body pre,
+.intel-readme.markdown-body code {
+  font-family: var(--font-mono);
+  background: var(--color-void);
+}
+.intel-readme.markdown-body table tr,
+.intel-readme.markdown-body table td,
+.intel-readme.markdown-body table th,
+.intel-readme.markdown-body hr {
+  background: transparent;
+  border-color: var(--color-steel);
 }

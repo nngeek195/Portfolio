@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Upload, X, Save, Image as ImageIcon, Timer } from 'lucide-react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { refreshLiveSite } from '@/lib/admin-revalidate';
 
 export default function MediaManager() {
   const [images, setImages] = useState<string[]>([]);
@@ -71,6 +72,7 @@ export default function MediaManager() {
         profileImages: images,
         intervalSeconds: intervalSeconds
       }, { merge: true });
+      refreshLiveSite();
       alert('Profile images and settings successfully synced to live site!');
     } catch (error) {
       console.error('Error saving to Firestore:', error);

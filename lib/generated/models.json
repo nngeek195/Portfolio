@@ -1,0 +1,373 @@
+{
+  "generatedBy": "scripts/models/build-models.mjs (npm run models)",
+  "models": [
+    {
+      "id": "rifle",
+      "url": "/models/rifle.glb",
+      "bytes": 1105372,
+      "credit": {
+        "title": "VSSK Vykhlop | Contract Wars",
+        "author": "xlisov",
+        "authorUrl": "https://sketchfab.com/xlisov74",
+        "source": "https://sketchfab.com/3d-models/vssk-vykhlop-contract-wars-162cb40bccd24dd498b76c6bcd4f3738",
+        "license": "Used under purchased licence"
+      },
+      "poster": {
+        "src": "/images/renders/rifle.webp",
+        "width": 2000,
+        "height": 558,
+        "anchors": {
+          "receiver": [
+            39.3,
+            44.03
+          ],
+          "stock": [
+            24.11,
+            64.98
+          ],
+          "magazine": [
+            22.08,
+            71.28
+          ],
+          "cheekrest": [
+            16.38,
+            46.32
+          ],
+          "buttpad": [
+            5.17,
+            60.75
+          ],
+          "handguard": [
+            48.73,
+            56.29
+          ],
+          "foregrip": [
+            53.17,
+            73.31
+          ],
+          "sight_rear": [
+            29.89,
+            36.3
+          ],
+          "sight_front": [
+            54.16,
+            36.52
+          ],
+          "scope": [
+            41.04,
+            25.07
+          ],
+          "suppressor": [
+            76.84,
+            49.59
+          ]
+        }
+      },
+      "parts": [
+        {
+          "name": "receiver",
+          "node": "receiver",
+          "triangles": 3438,
+          "pivot": [
+            -0.1091,
+            0.0168,
+            -0.0114
+          ]
+        },
+        {
+          "name": "stock",
+          "node": "stock",
+          "triangles": 1571,
+          "pivot": [
+            -0.2641,
+            -0.0428,
+            0.0034
+          ]
+        },
+        {
+          "name": "magazine",
+          "node": "magazine",
+          "triangles": 734,
+          "pivot": [
+            -0.2848,
+            -0.0608,
+            0.0033
+          ]
+        },
+        {
+          "name": "cheekrest",
+          "node": "cheekrest",
+          "triangles": 814,
+          "pivot": [
+            -0.3429,
+            0.0103,
+            0.0033
+          ]
+        },
+        {
+          "name": "buttpad",
+          "node": "buttpad",
+          "triangles": 276,
+          "pivot": [
+            -0.4573,
+            -0.0308,
+            0.0033
+          ]
+        },
+        {
+          "name": "handguard",
+          "node": "handguard",
+          "triangles": 3922,
+          "pivot": [
+            -0.0129,
+            -0.0181,
+            0.0036
+          ]
+        },
+        {
+          "name": "foregrip",
+          "node": "foregrip",
+          "triangles": 1468,
+          "pivot": [
+            0.0323,
+            -0.0665,
+            0.0031
+          ]
+        },
+        {
+          "name": "sight_rear",
+          "node": "sight_rear",
+          "triangles": 2006,
+          "pivot": [
+            -0.2051,
+            0.0388,
+            0.0034
+          ]
+        },
+        {
+          "name": "sight_front",
+          "node": "sight_front",
+          "triangles": 1521,
+          "pivot": [
+            0.0424,
+            0.0382,
+            0.0035
+          ]
+        },
+        {
+          "name": "scope",
+          "node": "scope",
+          "triangles": 6734,
+          "pivot": [
+            -0.0914,
+            0.0707,
+            0.0049
+          ]
+        },
+        {
+          "name": "suppressor",
+          "node": "suppressor",
+          "triangles": 985,
+          "pivot": [
+            0.2737,
+            0.001,
+            0.0021
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pistol",
+      "url": "/models/pistol.glb",
+      "bytes": 336400,
+      "credit": {
+        "title": "H&K USP Match | Contract Wars",
+        "author": "xlisov",
+        "authorUrl": "https://sketchfab.com/xlisov74",
+        "source": "https://sketchfab.com/3d-models/hk-usp-match-contract-wars-24eccdba4c464cfb87fade3182ad5783",
+        "license": "Used under purchased licence"
+      },
+      "poster": {
+        "src": "/images/renders/pistol.webp",
+        "width": 1400,
+        "height": 949,
+        "anchors": {
+          "frame": [
+            41.26,
+            55.27
+          ],
+          "magazine": [
+            18.65,
+            91.08
+          ],
+          "guide_rod": [
+            65.03,
+            29.91
+          ],
+          "slide": [
+            46.55,
+            24.53
+          ],
+          "compensator": [
+            74.68,
+            27.06
+          ],
+          "red_dot": [
+            16.82,
+            9.88
+          ]
+        }
+      },
+      "parts": [
+        {
+          "name": "frame",
+          "node": "frame",
+          "triangles": 3615,
+          "pivot": [
+            -0.0213,
+            -0.0088,
+            0
+          ]
+        },
+        {
+          "name": "magazine",
+          "node": "magazine",
+          "triangles": 396,
+          "pivot": [
+            -0.0762,
+            -0.0678,
+            -0.0001
+          ]
+        },
+        {
+          "name": "guide_rod",
+          "node": "guide_rod",
+          "triangles": 130,
+          "pivot": [
+            0.0366,
+            0.0331,
+            -0.0001
+          ]
+        },
+        {
+          "name": "slide",
+          "node": "slide",
+          "triangles": 1886,
+          "pivot": [
+            -0.0084,
+            0.0419,
+            0
+          ]
+        },
+        {
+          "name": "compensator",
+          "node": "compensator",
+          "triangles": 1304,
+          "pivot": [
+            0.06,
+            0.0377,
+            0
+          ]
+        },
+        {
+          "name": "red_dot",
+          "node": "red_dot",
+          "triangles": 852,
+          "pivot": [
+            -0.0807,
+            0.0661,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "heli",
+      "url": "/models/heli.glb",
+      "bytes": 244924,
+      "credit": {
+        "title": "MH-6 Little Bird [Low Poly]",
+        "author": "Muhamad Mirza Arrafi",
+        "authorUrl": "https://sketchfab.com/MirzaArrafiERV_45",
+        "source": "https://sketchfab.com/3d-models/mh-6-little-bird-low-poly-d7068144bfeb4d91bde5d30755657d97",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "poster": {
+        "src": "/images/renders/heli.webp",
+        "width": 1800,
+        "height": 676,
+        "anchors": {
+          "body": [
+            39.1,
+            49.99
+          ],
+          "canopy": [
+            67.03,
+            52.1
+          ],
+          "rotor_main": [
+            58.48,
+            21.48
+          ],
+          "rotor_tail": [
+            8.29,
+            41.25
+          ]
+        }
+      },
+      "parts": [
+        {
+          "name": "body",
+          "node": "body",
+          "triangles": 6651,
+          "pivot": [
+            -0.3224,
+            0,
+            -0.0358
+          ]
+        },
+        {
+          "name": "canopy",
+          "node": "canopy",
+          "triangles": 1060,
+          "pivot": [
+            0.504,
+            -0.0234,
+            -0.0369
+          ]
+        },
+        {
+          "name": "rotor_main",
+          "node": "rotor_main",
+          "triangles": 861,
+          "pivot": [
+            0.1682,
+            0.3902,
+            -0.0303
+          ],
+          "spinAxis": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "rotor_tail",
+          "node": "rotor_tail",
+          "triangles": 144,
+          "pivot": [
+            -1.2349,
+            0.0971,
+            -0.1229
+          ],
+          "spinAxis": [
+            0,
+            0,
+            1
+          ]
+        }
+      ]
+    }
+  ]
+}

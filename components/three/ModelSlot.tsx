@@ -1,0 +1,89 @@
+'use client';
+
+import { useCallback, useEffect, useId, useRef, useState, type ComponentType } from 'react';
+import dynamic from 'next/dynamic';
+import { useThree3D } from './ThreeProvider';
+
+export type ModelKind = 'rifle' | 'pistol';
+
+// Each model view is its own lazy chunk (they share the three.js chunk). The
+// helicopter is not a slot: it flies the whole page (components/three/companion).
+// A kind without a view keeps its flat render.
+// What the live 3D view shows, for screen readers once it has replaced the flat render.
+const LABELS: Record<ModelKind, string> = {
+  rifle: 'Live 3D rifle: its modules assemble as you scroll; the highlighted module is described below',
+  pistol: 'Live 3D pistol, field-stripped: its parts come apart and back together as you scroll',
+};
+
+const VIEWS: Partial<Record<ModelKind, ComponentType<{ onReady: () => void }>>> = {
+  rifle: dynamic(() => import('./views/RifleView'), { ssr: false }),
+  pistol: dynamic(() => import('./views/PistolView'), { ssr: false }),
+};
+
+/**
+ * Place where a 3D model appears. `children` is the flat render: it is what
+ * phones, reduced-motion and low-end devices see, and it stays visible on
+ * capable devices until the 3D model has loaded, then fades out.
+ *  - Loads the 3D view (and the shared canvas) when the slot is ~1 screen away.
+ *  - Reports on-screen visibility so the canvas only renders frames when needed.
+ */
+export default function ModelSlot({
+  kind,
+  className = '',
+  fallbackClassName = '',
+  children,
+}: {
+  kind: ModelKind;
+  /** Classes for the slot box (the 3D view fills it). Positioned `relative` unless absolute/fixed is given. */
+  className?: string;
+  /** Classes for the wrapper around the flat render. */
+  fallbackClassName?: string;
+  children?: React.ReactNode;
+}) {
+  const { enabled, requestCanvas, setVisible } = useThree3D();
+  const ref = useRef<HTMLDivElement>(null);
+  const id = useId();
+  const [near, setNear] = useState(false);
+  const [ready, setReady] = useState(false);
+  const onReady = useCallback(() => setReady(true), []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!enabled || !el) return;
+    const nearObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setNear(true);
+          requestCanvas();
+          nearObserver.disconnect();
+        }
+      },
+      { rootMargin: '100% 0px' }
+    );
+    const visibleObserver = new IntersectionObserver(([entry]) => setVisible(id, entry.isIntersecting));
+    nearObserver.observe(el);
+    visibleObserver.observe(el);
+    return () => {
+      nearObserver.disconnect();
+      visibleObserver.disconnect();
+      setVisible(id, false);
+    };
+  }, [enabled, requestCanvas, setVisible, id]);
+
+  const View = VIEWS[kind];
+  const live = ready && enabled;
+  return (
+    <div
+      ref={ref}
+      data-model-slot={kind}
+      data-ready={live || undefined}
+      // Once the 3D view has replaced the flat render, describe that instead (the flat one is hidden from screen readers).
+      role={live ? 'img' : undefined}
+      aria-label={live ? LABELS[kind] : undefined}
+      className={`${/\b(absolute|fixed)\b/.test(className) ? '' : 'relative'} ${className}`}
+    >
+      <div aria-hidden={live || undefined} className={`transition-opacity duration-700 ${live ? 'opacity-0' : 'opacity-100'} ${fallbackClassName}`}>{children}</div>
+      {enabled && near && View && <View onReady={onReady} />}
+    </div>
+  );
+}

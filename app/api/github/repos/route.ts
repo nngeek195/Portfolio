@@ -1,6 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
+import { adminSessionRequired, getAdminSession } from '@/lib/admin-session';
 
-export async function GET() {
+// Admin-only: lists every repository the GitHub token can see (including
+// private ones), so it requires a verified admin session.
+export async function GET(request: NextRequest) {
+  if (!(await getAdminSession(request))) return adminSessionRequired();
+
   const GITHUB_TOKEN = process.env.GITHUB_ACCESS_TOKEN;
 
   if (!GITHUB_TOKEN) {
@@ -29,7 +34,17 @@ export async function GET() {
       );
 
       if (!response.ok) {
-        throw new Error(`GitHub API responded with status: ${response.status}`);
+        const details = await response.text();
+
+        console.error('GitHub API error:', {
+          status: response.status,
+          message: details,
+          page,
+        });
+
+        throw new Error(
+          `GitHub API responded with status: ${response.status}`
+        );
       }
 
       const pageRepos = await response.json();
