@@ -283,6 +283,44 @@ html[data-heli-live] [data-lz-active] > article {
 }
 
 /* ==========================================================================
+   404 "LZ NOT FOUND": helicopter circling the empty landing zone (CSS only).
+   Pseudo-3D orbit: nearer (lower) = larger; it turns at each end of the loop.
+   ========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  .lz404-orbit {
+    animation: lz404-orbit 9s linear infinite;
+  }
+  .lz404-heli {
+    animation: lz404-face 9s linear infinite;
+  }
+  .lz404-sweep {
+    background: conic-gradient(from 0deg, rgb(124 255 91 / 0.22), transparent 18%);
+    animation: lz404-sweep 3s linear infinite;
+  }
+}
+@keyframes lz404-orbit {
+  0% { translate: -95% 0; scale: 0.8; }
+  12.5% { translate: -67% 9vh; scale: 0.95; }
+  25% { translate: -50% 12vh; scale: 1.05; }
+  37.5% { translate: -33% 9vh; scale: 0.95; }
+  50% { translate: -5% 0; scale: 0.8; }
+  62.5% { translate: -33% -7vh; scale: 0.62; }
+  75% { translate: -50% -9vh; scale: 0.55; }
+  87.5% { translate: -67% -7vh; scale: 0.62; }
+  100% { translate: -95% 0; scale: 0.8; }
+}
+/* Nose right on the near pass, nose left on the far pass; squeezes through a turn at each end. */
+@keyframes lz404-face {
+  0%, 100% { transform: scaleX(0); }
+  6%, 44% { transform: scaleX(1); }
+  50% { transform: scaleX(0); }
+  56%, 94% { transform: scaleX(-1); }
+}
+@keyframes lz404-sweep {
+  to { rotate: 360deg; }
+}
+
+/* ==========================================================================
    Intel viewer content (public project/article popup)
    ========================================================================== */
 .intel-prose a,
