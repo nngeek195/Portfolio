@@ -1,10 +1,13 @@
 'use client';
 
+import { useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
 import { registerScene } from '@/lib/motion/scene-progress';
+import { scrollForFocus } from '@/lib/motion/lenis';
+import { introStartedAt, whenBootDone } from '@/lib/boot/state';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -18,6 +21,22 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * the still's animated position, so the still keeps animating even when hidden.
  */
 export default function HeroScene() {
+  // Once the CSS intro has played, switch it off for good: a ScrollTrigger refresh moves the
+  // pinned hero out of its pin spacer and back, and re-inserted elements restart their CSS
+  // animations (the copy would vanish and rise in again). The end state is the resting style.
+  useEffect(() => {
+    let cancelled = false;
+    let timer = 0;
+    void whenBootDone().then(() => {
+      if (cancelled) return;
+      timer = window.setTimeout(() => document.getElementById('top')?.classList.add('intro-done'), Math.max(0, introStartedAt() + 2600 - performance.now()));
+    });
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, []);
+
   useGSAP(() => {
     const mm = gsap.matchMedia();
     mm.add(SCENE_MEDIA, () => {
@@ -57,7 +76,19 @@ export default function HeroScene() {
         .to({}, { duration: 0.04 }); // short hold on the slit before unpinning
 
       const unregister = registerScene('hero', tl.scrollTrigger);
+
+      // Keyboard: the buttons fade out as the scene plays. Tabbing back to them (from the nav,
+      // or Shift+Tab from below) returns to the start of the scene, where they are visible.
+      const onFocus = () => {
+        const st = tl.scrollTrigger;
+        if (st && window.scrollY > st.start + 4) scrollForFocus(st.start, () => {
+          ScrollTrigger.update();
+          st.getTween()?.progress(1);
+        });
+      };
+      section.addEventListener('focusin', onFocus);
       return () => {
+        section.removeEventListener('focusin', onFocus);
         unregister();
         if (nvg) nvg.textContent = 'ON';
       };

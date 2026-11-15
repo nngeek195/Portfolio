@@ -35,9 +35,12 @@
 html {
   scroll-behavior: smooth;
 }
-/* Lenis drives smooth scrolling itself; native smooth-scroll would fight it. */
+/* Lenis drives smooth scrolling itself; native smooth-scroll would fight it.
+   !important: GSAP ScrollTrigger caches the base "smooth" before Lenis starts and
+   writes it back inline after every refresh, which made keyboard focus jumps
+   crawl across the page (and fight Lenis). */
 html.lenis {
-  scroll-behavior: auto;
+  scroll-behavior: auto !important;
 }
 
 body {
@@ -54,6 +57,9 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-nv);
   outline-offset: 3px;
+  /* Keyboard focus scrolling keeps the element clear of the fixed nav (64px) and the screen edge. */
+  scroll-margin-top: 88px;
+  scroll-margin-bottom: 24px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -213,6 +219,11 @@ body {
   .hero-intro .intro-frame {
     animation: intro-frame 0.9s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
+}
+
+/* Played once (HeroScene adds .intro-done): never replays when a refresh re-inserts the pinned hero. */
+.hero-intro.intro-done :is(.nv-flash, .intro-up, .intro-heli, .intro-frame) {
+  animation: none !important;
 }
 
 @keyframes nv-power-on {

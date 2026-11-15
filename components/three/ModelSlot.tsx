@@ -9,6 +9,12 @@ export type ModelKind = 'rifle' | 'pistol';
 // Each model view is its own lazy chunk (they share the three.js chunk). The
 // helicopter is not a slot: it flies the whole page (components/three/companion).
 // A kind without a view keeps its flat render.
+// What the live 3D view shows, for screen readers once it has replaced the flat render.
+const LABELS: Record<ModelKind, string> = {
+  rifle: 'Live 3D rifle: its modules assemble as you scroll; the highlighted module is described below',
+  pistol: 'Live 3D pistol, field-stripped: its parts come apart and back together as you scroll',
+};
+
 const VIEWS: Partial<Record<ModelKind, ComponentType<{ onReady: () => void }>>> = {
   rifle: dynamic(() => import('./views/RifleView'), { ssr: false }),
   pistol: dynamic(() => import('./views/PistolView'), { ssr: false }),
@@ -65,14 +71,18 @@ export default function ModelSlot({
   }, [enabled, requestCanvas, setVisible, id]);
 
   const View = VIEWS[kind];
+  const live = ready && enabled;
   return (
     <div
       ref={ref}
       data-model-slot={kind}
-      data-ready={(ready && enabled) || undefined}
+      data-ready={live || undefined}
+      // Once the 3D view has replaced the flat render, describe that instead (the flat one is hidden from screen readers).
+      role={live ? 'img' : undefined}
+      aria-label={live ? LABELS[kind] : undefined}
       className={`${/\b(absolute|fixed)\b/.test(className) ? '' : 'relative'} ${className}`}
     >
-      <div className={`transition-opacity duration-700 ${ready && enabled ? 'opacity-0' : 'opacity-100'} ${fallbackClassName}`}>{children}</div>
+      <div aria-hidden={live || undefined} className={`transition-opacity duration-700 ${live ? 'opacity-0' : 'opacity-100'} ${fallbackClassName}`}>{children}</div>
       {enabled && near && View && <View onReady={onReady} />}
     </div>
   );

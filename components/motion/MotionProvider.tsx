@@ -87,6 +87,26 @@ export default function MotionProvider({ children }: { children: React.ReactNode
     return () => document.removeEventListener('click', onClick, true);
   }, []);
 
+  // Keyboard focus must not sit under the fixed nav: the nav slides back in when the page
+  // scrolls up (Shift+Tab), over an element the browser considered already in view.
+  useEffect(() => {
+    const NAV = 64;
+    const onFocus = (e: FocusEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (!el?.matches?.(':focus-visible') || el.closest('header, [role="dialog"]')) return;
+      requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        if (r.top >= NAV + 8 || r.bottom <= 0) return;
+        const y = window.scrollY + r.top - (NAV + 24);
+        const lenis = lenisRef.current;
+        if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
+        else window.scrollTo({ top: y, behavior: 'auto' });
+      });
+    };
+    document.addEventListener('focusin', onFocus);
+    return () => document.removeEventListener('focusin', onFocus);
+  }, []);
+
   // Recalculate trigger positions once late layout settles: web fonts, images,
   // and <details> toggles (e.g. "Show all commendations").
   // Also on resize and whenever the page height changes after the first measure (images that
@@ -100,7 +120,20 @@ export default function MotionProvider({ children }: { children: React.ReactNode
     const onToggle = () => requestAnimationFrame(refresh);
     document.addEventListener('toggle', onToggle, true);
     const uninstall = installAutoRefresh();
+    // A refresh briefly moves pinned sections out of their pin spacers and back (GSAP),
+    // which drops keyboard focus to <body> if it was inside one: put it back.
+    let focused: Element | null = null;
+    const saveFocus = () => (focused = document.activeElement);
+    const restoreFocus = () => {
+      const el = focused as HTMLElement | null;
+      focused = null;
+      if (el && el !== document.body && el.isConnected && document.activeElement !== el) el.focus({ preventScroll: true });
+    };
+    ScrollTrigger.addEventListener('refreshInit', saveFocus);
+    ScrollTrigger.addEventListener('refresh', restoreFocus);
     return () => {
+      ScrollTrigger.removeEventListener('refreshInit', saveFocus);
+      ScrollTrigger.removeEventListener('refresh', restoreFocus);
       window.removeEventListener('load', refresh);
       document.removeEventListener('toggle', onToggle, true);
       uninstall();

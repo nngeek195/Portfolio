@@ -103,7 +103,8 @@ export default function SharedCanvas({ active, onFallback }: { active: boolean; 
   useEffect(() => void (dbg.canvas.dpr = dpr), [dpr]);
   return (
     <Canvas
-      aria-hidden="true"
+      role="img"
+      aria-label="Live 3D layer: a night-vision helicopter that flies along the page, the pistol in Personnel File and the rifle assembling in Loadout. Decorative; everything it shows is also in the text."
       style={{ position: 'fixed', inset: 0, zIndex: 25, pointerEvents: 'none' }}
       dpr={dpr}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}

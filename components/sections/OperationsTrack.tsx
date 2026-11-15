@@ -8,6 +8,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import IntelViewer from '@/components/intel/IntelViewer';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
+import { scrollForFocus } from '@/lib/motion/lenis';
 import SmartImage from '@/components/SmartImage';
 import type { ContentItem } from '@/lib/content-types';
 import { formatDate, stripHtml } from '@/lib/text';
@@ -40,6 +41,9 @@ export default function OperationsTrack({ projects, articles, totalProjects }: {
       if (distance() < 40) return; // everything fits: nothing to drive
 
       viewport.style.overflowX = 'clip';
+      // The region is only a tab stop for scrolling it sideways by keyboard; here the page scroll
+      // drives it and each card is focusable itself, so take it out of the tab order.
+      viewport.tabIndex = -1;
       track.classList.remove('snap-x', 'snap-mandatory');
       if (hintRef.current) hintRef.current.textContent = 'Scroll to advance';
 
@@ -64,7 +68,10 @@ export default function OperationsTrack({ projects, articles, totalProjects }: {
         const card = (e.target as HTMLElement).closest('li');
         if (!st || !card || !track.contains(card)) return;
         const target = Math.min(1, card.offsetLeft / Math.max(distance(), 1));
-        window.scrollTo({ top: st.start + target * (st.end - st.start), behavior: 'auto' });
+        scrollForFocus(st.start + target * (st.end - st.start), () => {
+          ScrollTrigger.update();
+          st.getTween()?.progress(1);
+        });
         viewport.scrollLeft = 0; // focus may have scrolled the clipped viewport itself
       };
       track.addEventListener('focusin', onFocus);
@@ -73,6 +80,7 @@ export default function OperationsTrack({ projects, articles, totalProjects }: {
       return () => {
         track.removeEventListener('focusin', onFocus);
         viewport.style.overflowX = '';
+        viewport.tabIndex = 0;
         track.classList.add('snap-x', 'snap-mandatory');
         if (hintRef.current) hintRef.current.textContent = 'Swipe / scroll sideways';
       };
