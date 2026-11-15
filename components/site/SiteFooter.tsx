@@ -54,7 +54,7 @@ export default function SiteFooter() {
                 ) : (
                   m.credit.license
                 )}
-                . Modified (re-textured, split, optimised).
+                . Modified (re-textured, split, optimised{m.id === 'heli' ? '; crew figures and tail number added' : ''}).
               </li>
             ))}
           </ul>

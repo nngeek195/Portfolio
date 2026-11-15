@@ -28,6 +28,11 @@ All three models (CC-BY requires stating changes):
 - Re-oriented, re-centered, and split into separately named, animatable parts.
 - Material fixes (metallic factor, single-sided faces; helicopter emissive removed,
   duplicate canopy glass removed).
+
+Helicopter only, added at runtime by the site (not baked into the file):
+- Simple crew silhouettes on the outboard benches (basic shapes) and a
+  tail-number decal (the site owner's callsign), plus effects drawn around it
+  (rotor blur discs, navigation strobes, searchlight, shadow, dust).
 - Textures converted to WebP; geometry compressed with Meshopt.
 - Rifle and pistol: manufacturer and brand markings painted out of the textures
   (RUSTACT DYNAMICS, HENSOLDT/ZEISS, H&K/USP, DELTAPOINT/Leupold, suppressor
