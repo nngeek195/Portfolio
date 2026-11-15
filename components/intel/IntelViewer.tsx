@@ -26,7 +26,7 @@ const cleanTitle = (t?: string) => (t ?? '').split(' | ')[0].trim();
 export default function IntelViewer({ item, type, onClose }: Props) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const [readme, setReadme] = useState<{ repo: string; html: string | null; error?: string } | null>(null);
+  const [readme, setReadme] = useState<{ repo: string; html: string | null; error?: string; notFound?: boolean; repoUrl?: string } | null>(null);
 
   const open = !!item;
   const repo = type === 'project' ? item?.repoName : undefined;
@@ -67,9 +67,13 @@ export default function IntelViewer({ item, type, onClose }: Props) {
     if (typeof item?.readmeHtml === 'string' && item.readmeHtml) return;
     let cancelled = false;
     fetch(`/api/github/readme?repo=${encodeURIComponent(repo)}`)
-      .then((r) => r.json())
-      .then((d) => !cancelled && setReadme({ repo, html: d.html ?? null, error: d.error }))
-      .catch(() => !cancelled && setReadme({ repo, html: null, error: 'Could not load the README.' }));
+      .then(async (r) => {
+        const d = await r.json().catch(() => ({}));
+        if (cancelled) return;
+        const error = d.error ?? (r.ok ? undefined : `The README could not be loaded (error ${r.status}).`);
+        setReadme({ repo, html: d.notFound ? null : (d.html ?? null), error: d.notFound ? 'This repository has no README yet.' : error, notFound: !!d.notFound, repoUrl: d.repoUrl });
+      })
+      .catch(() => !cancelled && setReadme({ repo, html: null, error: 'The README could not be loaded (network error).' }));
     return () => {
       cancelled = true;
     };
@@ -176,7 +180,20 @@ export default function IntelViewer({ item, type, onClose }: Props) {
                 ) : readmeHtml ? (
                   <div className="markdown-body intel-readme" dangerouslySetInnerHTML={{ __html: readmeHtml }} />
                 ) : (
-                  <p className="text-ash">{readme?.error ?? 'No README available.'}</p>
+                  // Clear message + a way out, never an empty panel.
+                  <div className="flex flex-col items-start gap-4">
+                    <p className="text-ash">{readme?.error ?? 'No README available.'}</p>
+                    {(item.repoUrl || readme?.repoUrl) && (
+                      <a
+                        href={item.repoUrl || readme?.repoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="clip-corner-sm inline-flex items-center gap-2 bg-bone px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-void hover:bg-white"
+                      >
+                        Open on GitHub <ExternalLink size={14} aria-hidden="true" />
+                      </a>
+                    )}
+                  </div>
                 )}
               </section>
             )}
