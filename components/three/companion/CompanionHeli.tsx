@@ -14,6 +14,7 @@ import { prepareModel, applyNightVision, type NightVisionUniforms } from '../nig
 import { Environment, ModelErrorBoundary } from '../views/ModelView';
 import { createDirector, type Director } from './director';
 import { lastHeli } from './handoff';
+import { requestRefresh } from '@/lib/motion/refresh';
 import { makeCrew, makeParticles, makeRotorDisc, makeSearchlight, makeShadow, makeShimmer, makeStrobe, makeTailNumber } from './effects';
 
 const URL = model('heli').url;
@@ -110,6 +111,7 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
     rig.current = built;
     dbg.heli.loaded = true;
     dbgEvent('heli model ready');
+    requestRefresh('heli model loaded');
     scene.add(built.outer, built.searchlight.group, built.shadow, built.particles.points);
     // Draw on top of the other model views: clear depth before this view renders.
     const prev = scene.onBeforeRender;

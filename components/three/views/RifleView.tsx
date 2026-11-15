@@ -8,6 +8,7 @@ import { LOADOUT } from '@/lib/loadout';
 import { model } from '@/lib/models';
 import { loadoutApproach, rifleDropLanded } from '@/lib/motion/heli';
 import { sceneProgress } from '@/lib/motion/scene-progress';
+import { requestRefresh } from '@/lib/motion/refresh';
 import { dbg, dbgEvent } from '@/lib/debug';
 import { prepareModel, setGlow } from '../nightVision';
 import ModelView, { ReadySignal } from './ModelView';
@@ -54,6 +55,7 @@ function Rifle({ onReady }: { onReady: () => void }) {
     dbg.rifle.loaded = true;
     dbgEvent('rifle model ready');
     invalidate(); // draw the correct pose right away, even if the canvas is rendering on demand
+    requestRefresh('rifle model loaded');
     return () => void (dbg.rifle.loaded = false);
   }, [root, invalidate]);
 

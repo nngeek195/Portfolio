@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { SIDEARM_TRAITS } from '@/lib/profile';
 import { model } from '@/lib/models';
 import { sceneProgress } from '@/lib/motion/scene-progress';
+import { requestRefresh } from '@/lib/motion/refresh';
 import { prepareModel, setGlow } from '../nightVision';
 import ModelView, { ReadySignal } from './ModelView';
 import { dbg } from '@/lib/debug';
@@ -45,6 +46,7 @@ function Pistol({ onReady }: { onReady: () => void }) {
     rig.current = { pistol, base: new Map(pistol.children.map((c) => [c.name, c.position.clone()])), materials: prepareModel(pistol) };
     dbg.pistol.loaded = true;
     invalidate();
+    requestRefresh('pistol model loaded');
     return () => void (dbg.pistol.loaded = false);
   }, [root, invalidate]);
 

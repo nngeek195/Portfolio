@@ -8,6 +8,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 import { useGSAP } from '@gsap/react';
+import { installAutoRefresh } from '@/lib/motion/refresh';
 
 gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin, useGSAP);
 
@@ -82,15 +83,21 @@ export default function MotionProvider({ children }: { children: React.ReactNode
 
   // Recalculate trigger positions once late layout settles: web fonts, images,
   // and <details> toggles (e.g. "Show all commendations").
+  // Also on resize and whenever the page height changes after the first measure (images that
+  // load late and change the layout; next/image reserves space, so most don't),
+  // via lib/motion/refresh (forced, once the page is still: ScrollTrigger's own resize refresh
+  // waits for a scroll-end signal that Lenis doesn't reliably produce).
   useEffect(() => {
     const refresh = () => ScrollTrigger.refresh();
     document.fonts?.ready.then(refresh);
     window.addEventListener('load', refresh);
     const onToggle = () => requestAnimationFrame(refresh);
     document.addEventListener('toggle', onToggle, true);
+    const uninstall = installAutoRefresh();
     return () => {
       window.removeEventListener('load', refresh);
       document.removeEventListener('toggle', onToggle, true);
+      uninstall();
     };
   }, []);
 
