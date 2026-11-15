@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { getLenis } from '@/lib/motion/lenis';
 import { BOOT_DONE_EVENT } from '@/lib/boot/state';
 import { startBootProgress, type LineId } from '@/lib/boot/progress';
+import { followHashChanges, goToScrollTarget, goToScrollTargetAfterLoad, rememberScroll } from '@/lib/boot/scroll-target';
 
 // Timing rules for the boot preloader (ms since navigation start).
 export const BOOT_MIN_MS = 1200; // never flicker on fast connections
@@ -36,10 +37,24 @@ export default function BootController() {
   useEffect(() => {
     const root = document.documentElement;
     const boot = document.getElementById('boot');
+    const unremember = rememberScroll();
+    const unfollow = followHashChanges();
+    const forget = () => {
+      unremember();
+      unfollow();
+    };
     // Only take over a preloader that is still loading (the inline script may already
-    // have exited it at the hard cap on a slow device).
-    if (root.dataset.boot !== 'on' || !boot) return;
+    // have exited it at the hard cap on a slow device). Otherwise just land on the
+    // hash target / restored position once the page has settled.
+    if (root.dataset.boot !== 'on' || !boot) {
+      const cancel = goToScrollTargetAfterLoad();
+      return () => {
+        cancel();
+        forget();
+      };
+    }
     window.__bootCtl = true;
+    let undoTarget = () => {};
 
     root.classList.add('boot-lock');
     getLenis()?.stop();
@@ -76,6 +91,7 @@ export default function BootController() {
         window.setTimeout(
           () => {
             ScrollTrigger.refresh();
+            undoTarget = goToScrollTarget(); // deep link / reload position, while still covered
             window.__bootExitAt = performance.now();
             if (fast) boot.dataset.fast = '';
             root.setAttribute('data-boot', 'exit'); // hero intro + night-vision flash start now
@@ -152,6 +168,8 @@ export default function BootController() {
     window.addEventListener('keydown', onKey);
 
     return () => {
+      undoTarget();
+      forget();
       cancelAnimationFrame(raf);
       timers.forEach((t) => window.clearTimeout(t));
       window.clearInterval(clock);
