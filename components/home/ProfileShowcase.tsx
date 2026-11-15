@@ -8,8 +8,8 @@ type Props = {
   intervalSeconds: number;
 };
 
-// Round photo frame that crossfades through the profile images managed in
-// /admin/dashboard/media. Images and timing are loaded on the server.
+// Subject photo for the dossier: crossfades through the profile images managed
+// in /admin/dashboard/media (loaded on the server), with a night-vision grade.
 export default function ProfileShowcase({ images, intervalSeconds }: Props) {
   const [current, setCurrent] = useState(0);
 
@@ -20,33 +20,27 @@ export default function ProfileShowcase({ images, intervalSeconds }: Props) {
   }, [images.length, intervalSeconds]);
 
   return (
-    <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-full border-4 border-cyan-500 shadow-[0_0_40px_rgba(0,255,234,0.3)] overflow-hidden group">
-      {images.map((src, index) => (
-        <SmartImage
-          key={src}
-          src={src}
-          alt={`Profile photo ${index + 1}`}
-          fill
-          sizes="(min-width: 768px) 384px, 288px"
-          preload={index === 0}
-          className={`object-cover transition-all duration-1000 ease-in-out group-hover:scale-110 ${
-            index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
-          }`}
-        />
-      ))}
-
-      {images.length > 1 && (
-        <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-20" aria-hidden="true">
-          {images.map((src, idx) => (
-            <div
-              key={src}
-              className={`h-2 rounded-full transition-all duration-500 ${
-                idx === current ? 'bg-cyan-400 w-4 shadow-[0_0_10px_rgba(34,211,238,0.8)]' : 'bg-gray-500/80 w-2'
-              }`}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+    <figure className="w-full">
+      <div className="hud-corners relative aspect-[4/5] overflow-hidden bg-gunmetal [--hud-c:var(--color-bone)]">
+        {images.map((src, index) => (
+          <SmartImage
+            key={src}
+            src={src}
+            alt={`Photo of the subject, ${index + 1} of ${images.length}`}
+            fill
+            sizes="(min-width: 1024px) 260px, (min-width: 640px) 40vw, 80vw"
+            className={`object-cover grayscale contrast-125 transition-opacity duration-1000 ${index === current ? 'opacity-100' : 'opacity-0'}`}
+          />
+        ))}
+        <div className="pointer-events-none absolute inset-0 bg-nv/15 mix-blend-overlay" aria-hidden="true" />
+        <div className="scanlines pointer-events-none absolute inset-0 opacity-50" aria-hidden="true" />
+      </div>
+      <figcaption className="mt-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-ash">
+        <span>Subject photo</span>
+        <span aria-hidden="true">
+          {String(current + 1).padStart(2, '0')}/{String(images.length).padStart(2, '0')}
+        </span>
+      </figcaption>
+    </figure>
   );
 }

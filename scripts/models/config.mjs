@@ -47,6 +47,7 @@ export const MODELS = [
     id: 'rifle',
     input: 'Model/guns/riffel.glb',
     output: 'public/models/rifle.glb',
+    poster: { width: 2000, mode: 'shaded', color: '#b9c0c7' },
     credit: {
       title: 'VSSK Vykhlop | Contract Wars',
       author: 'xlisov',
@@ -110,6 +111,7 @@ export const MODELS = [
     id: 'pistol',
     input: 'Model/guns/pistol.glb',
     output: 'public/models/pistol.glb',
+    poster: { width: 1400, mode: 'shaded', color: '#b9c0c7' },
     credit: {
       title: 'H&K USP Match | Contract Wars',
       author: 'xlisov',
@@ -153,6 +155,7 @@ export const MODELS = [
     id: 'heli',
     input: 'Model/hellicopter.glb',
     output: 'public/models/heli.glb',
+    poster: { width: 1800, mode: 'silhouette', color: '#050706' },
     credit: {
       title: 'MH-6 Little Bird [Low Poly]',
       author: 'Muhamad Mirza Arrafi',

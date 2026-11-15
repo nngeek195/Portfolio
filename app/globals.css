@@ -1,27 +1,182 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ==========================================================================
+   Design system — "Ghost" tactical theme
+   Palette: near-black base, gunmetal surfaces, bone text. Night-vision green,
+   amber and signal red are accents only (HUD states, warnings, REC).
+   ========================================================================== */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-void: #07080a;      /* page background */
+  --color-gunmetal: #14171a;  /* surfaces, cards */
+  --color-steel: #2a3036;     /* borders, dividers */
+  --color-ash: #8a9199;       /* secondary text (6:1 on void) */
+  --color-bone: #e8e4d9;      /* primary text (15:1 on void) */
+  --color-nv: #7cff5b;        /* night-vision accent, HUD active */
+  --color-olive: #4a5233;     /* muted military tint */
+  --color-amber: #ffb020;     /* warnings, placeholders */
+  --color-signal: #e0362c;    /* REC, critical, stamps */
+  --color-blueprint: #5fa8d3; /* Loadout schematic only */
+
+  --font-display: var(--font-display-face), "Arial Narrow", sans-serif;
+  --font-stencil: var(--font-stencil-face), var(--font-display-face), sans-serif;
+  --font-sans: var(--font-sans-face), system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: var(--color-void);
+  --foreground: var(--color-bone);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  /* Uses --font-sans (Geist) from @theme; a hardcoded Arial here used to override it. */
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-nv) 35%, transparent);
+  color: var(--color-bone);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-nv);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@layer components {
+  /* Film grain over the whole site (static; pointer-events off). */
+  .film-grain::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.07;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* CRT / night-vision scanlines. */
+  .scanlines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0) 0,
+      rgb(0 0 0 / 0) 2px,
+      rgb(0 0 0 / 0.28) 3px
+    );
+  }
+
+  /* Night-vision sky for the hero. */
+  .nv-sky {
+    background:
+      radial-gradient(ellipse 60% 55% at 68% 30%, rgb(124 255 91 / 0.22), transparent 70%),
+      radial-gradient(ellipse 90% 70% at 50% 100%, rgb(18 40 16 / 0.9), transparent 70%),
+      linear-gradient(to bottom, #0b1a0b 0%, #0a140a 45%, var(--color-void) 100%);
+  }
+
+  /* Blueprint grid for the Loadout schematic. */
+  .blueprint-grid {
+    background-color: #070b0f;
+    background-image:
+      linear-gradient(rgb(95 168 211 / 0.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(95 168 211 / 0.12) 1px, transparent 1px),
+      linear-gradient(rgb(95 168 211 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(95 168 211 / 0.05) 1px, transparent 1px);
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  }
+
+  /* Topographic contour lines for Operations. */
+  .topo-lines {
+    background-image:
+      repeating-radial-gradient(circle at 22% 35%, transparent 0 26px, rgb(232 228 217 / 0.05) 26px 27px),
+      repeating-radial-gradient(circle at 80% 75%, transparent 0 34px, rgb(232 228 217 / 0.04) 34px 35px);
+  }
+
+  /* Angled corners for buttons and cards. */
+  .clip-corner {
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  }
+  .clip-corner-sm {
+    clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+  }
+
+  /* HUD corner brackets: L-shaped ticks at all four corners. Colour via --hud-c. */
+  .hud-corners {
+    position: relative;
+    --hud-c: var(--color-steel);
+    --hud-l: 14px;
+  }
+  .hud-corners::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--hud-c), var(--hud-c)) top left / var(--hud-l) 1px no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) top left / 1px var(--hud-l) no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) top right / var(--hud-l) 1px no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) top right / 1px var(--hud-l) no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) bottom left / var(--hud-l) 1px no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) bottom left / 1px var(--hud-l) no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) bottom right / var(--hud-l) 1px no-repeat,
+      linear-gradient(var(--hud-c), var(--hud-c)) bottom right / 1px var(--hud-l) no-repeat;
+  }
+
+  /* Bracket hover: "[ LABEL ]" — brackets slide in on hover/focus. */
+  .bracket-hover {
+    position: relative;
+  }
+  .bracket-hover::before,
+  .bracket-hover::after {
+    position: absolute;
+    top: 50%;
+    opacity: 0;
+    transform: translateY(-50%);
+    transition: opacity 150ms ease, transform 150ms ease;
+    font-family: var(--font-mono);
+  }
+  .bracket-hover::before {
+    content: "[";
+    left: 0.6rem;
+    transform: translate(-6px, -50%);
+  }
+  .bracket-hover::after {
+    content: "]";
+    right: 0.6rem;
+    transform: translate(6px, -50%);
+  }
+  .bracket-hover:hover::before,
+  .bracket-hover:hover::after,
+  .bracket-hover:focus-visible::before,
+  .bracket-hover:focus-visible::after {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+
+  /* Hide horizontal scrollbars on swipe tracks but keep them scrollable. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }

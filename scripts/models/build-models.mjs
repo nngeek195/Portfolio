@@ -10,6 +10,7 @@
 //   5. give every part its own pivot: <part> (translation = pivot) -> <part>_mesh
 //      Animate the <part> node; the _mesh child carries Meshopt's dequantization transform.
 //   6. fix materials, convert textures to WebP, compress geometry with Meshopt
+//   7. render static side-view posters to public/images/renders/ (pre-3D stand-ins)
 //
 // Review images (part split + logo before/after) are written to Model/_review/.
 // Usage: npm run models
@@ -22,12 +23,14 @@ import { MeshoptDecoder, MeshoptEncoder } from 'meshoptimizer';
 import sharp from 'sharp';
 import { MODELS } from './config.mjs';
 import { boundsCenter, boundsOfPrimitives, indicesOf, looseParts, multiply, subsetPrimitive, transformDirection, transformPoint, translation } from './geometry.mjs';
+import { renderPoster } from './posters.mjs';
 import { renderPartsSheet, renderPatchSheet } from './preview.mjs';
 import { applyPatches, decodeImage, encodePng } from './textures.mjs';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
 const REVIEW_DIR = path.join(ROOT, 'Model/_review');
 const MANIFEST = path.join(ROOT, 'lib/generated/models.json');
+const POSTER_DIR = path.join(ROOT, 'public/images/renders');
 const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 const round = (v, d = 4) => +v.toFixed(d);
 const triangleCount = (prims) => prims.reduce((s, p) => s + indicesOf(p).length / 3, 0);
@@ -163,6 +166,12 @@ async function buildModel(io, model, patchEntries) {
   await doc.transform(prune(), dedup());
 
   await renderPartsSheet(model.id, parts, path.join(REVIEW_DIR, `${model.id}-parts.png`));
+  let poster;
+  if (model.poster) {
+    await fs.mkdir(POSTER_DIR, { recursive: true });
+    const file = path.join(POSTER_DIR, `${model.id}.webp`);
+    poster = { src: `/images/renders/${model.id}.webp`, ...(await renderPoster(parts, { ...model.poster, file })) };
+  }
 
   // 7. Compression -----------------------------------------------------------
   await doc.transform(
@@ -190,6 +199,7 @@ async function buildModel(io, model, patchEntries) {
     url: '/' + path.relative(path.join(ROOT, 'public'), outFile).split(path.sep).join('/'),
     bytes: outSize.size,
     credit: model.credit,
+    ...(poster ? { poster } : {}),
     parts: parts.map((p) => ({ name: p.name, node: p.name, triangles: p.triangles, pivot: p.pivot.map((v) => round(v)), ...(p.spinAxis ? { spinAxis: p.spinAxis } : {}) })),
   };
 }

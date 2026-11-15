@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, useEffect, useRef, FormEvent } from 'react';
-import { MessageCircle, Send, X, Link as LinkIcon } from 'lucide-react';
+import { Link as LinkIcon, Radio, Send, X } from 'lucide-react';
 
-// --- DIGITAL TWIN CHATBOT ---
+// --- COMMS HANDLER (AI digital twin chatbot) ---
 type ChatMessage = { sender: 'user' | 'bot'; text: string; isError?: boolean };
 
 const CHATBOT_ID = 'bot-DuTBQafi';
 const CHATBOT_APP_URL = 'https://wikizeroai.vercel.app';
 const CHATBOT_API_URL = `${CHATBOT_APP_URL}/api/chat/${CHATBOT_ID}`;
+
+// Dispatch this on window to open the widget (used by the Comms section).
+export const OPEN_COMMS_EVENT = 'comms:open';
 
 function isUrl(str: string) {
   return /^https?:\/\/\S+$/.test(str);
@@ -25,24 +28,21 @@ function ChatBubble({ sender, text, isError }: ChatMessage) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed break-words ${
+        className={`max-w-[85%] break-words px-4 py-3 text-sm leading-relaxed ${
           isUser
-            ? 'bg-cyan-600 text-black rounded-br-sm font-medium'
+            ? 'clip-corner-sm bg-bone font-medium text-void'
             : isError
-            ? 'bg-red-950/40 border border-red-900 text-red-400 rounded-bl-sm'
-            : 'bg-gray-800 text-slate-200 rounded-bl-sm'
+              ? 'border border-signal/60 bg-signal/10 text-signal'
+              : 'bg-gunmetal text-bone ring-1 ring-inset ring-steel'
         }`}
       >
+        {!isUser && (
+          <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.2em] text-nv">{isError ? 'Signal lost' : 'Handler'}</p>
+        )}
         <p className="whitespace-pre-wrap">
           {parts.map((part, idx) =>
             isUrl(part) ? (
-              <a
-                key={idx}
-                href={part}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-cyan-400 underline break-all"
-              >
+              <a key={idx} href={part} target="_blank" rel="noopener noreferrer" className="break-all text-nv underline">
                 {part}
               </a>
             ) : (
@@ -64,12 +64,12 @@ function ChatBubble({ sender, text, isError }: ChatMessage) {
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 hover:border-cyan-500 transition-colors"
+                  className="flex items-center gap-2 bg-void px-3 py-2 ring-1 ring-inset ring-steel transition-colors hover:ring-nv"
                 >
-                  <LinkIcon size={14} className="text-cyan-400 flex-shrink-0" />
+                  <LinkIcon size={14} className="flex-shrink-0 text-nv" aria-hidden="true" />
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold text-slate-200 truncate">{domain}</div>
-                    <div className="text-[10px] text-slate-500">Tap to view link</div>
+                    <div className="truncate text-xs font-semibold text-bone">{domain}</div>
+                    <div className="text-[10px] text-ash">Tap to view link</div>
                   </div>
                 </a>
               );
@@ -84,16 +84,33 @@ function ChatBubble({ sender, text, isError }: ChatMessage) {
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { sender: 'bot', text: 'Hello! Ask me anything about my professional background.' },
+    { sender: 'bot', text: 'Channel open. Ask me anything about my professional background.' },
   ]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const chatHistoryRef = useRef<{ role: string; parts: { text: string }[] }[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isSending, isOpen]);
+
+  // Open from elsewhere on the page (Comms section), close with Escape.
+  useEffect(() => {
+    const open = () => setIsOpen(true);
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setIsOpen(false);
+    window.addEventListener(OPEN_COMMS_EVENT, open);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener(OPEN_COMMS_EVENT, open);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) inputRef.current?.focus({ preventScroll: true });
+  }, [isOpen]);
 
   const handleSend = async (e: FormEvent) => {
     e.preventDefault();
@@ -131,59 +148,58 @@ export default function ChatWidget() {
 
   return (
     <>
-      {/* Trigger button */}
+      {/* Trigger: radio handset */}
       <button
+        type="button"
         onClick={() => setIsOpen(true)}
-        aria-label="Open chat"
-        className={`fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black shadow-[0_0_25px_rgba(34,211,238,0.5)] flex items-center justify-center hover:scale-110 transition-all ${
-          isOpen ? 'opacity-0 pointer-events-none scale-75' : 'opacity-100'
+        aria-label="Open comms handler (AI chat)"
+        className={`clip-corner fixed bottom-5 right-5 z-50 grid h-14 w-14 place-items-center bg-bone text-void shadow-[0_0_0_1px_rgb(124_255_91/0.5),0_0_24px_rgb(124_255_91/0.25)] transition-[opacity,transform] hover:scale-105 ${
+          isOpen ? 'pointer-events-none scale-75 opacity-0' : 'opacity-100'
         }`}
       >
-        <MessageCircle size={26} />
+        <Radio size={24} aria-hidden="true" />
       </button>
 
-      {/* Chat window: full-screen sheet on mobile, floating card from sm+ */}
+      {/* Window: full-screen sheet on mobile, floating panel from sm+ */}
       <div
-        className={`fixed z-50 bg-gray-950 border border-cyan-900/50 shadow-[0_0_40px_rgba(0,0,0,0.6)] flex flex-col transition-all duration-300 origin-bottom-right
-          inset-0 sm:inset-auto sm:bottom-5 sm:right-5 sm:w-96 sm:h-[32rem] sm:rounded-2xl sm:max-h-[85vh]
-          ${isOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}`}
         role="dialog"
+        aria-label="Comms handler"
         aria-hidden={!isOpen}
+        inert={!isOpen}
+        className={`fixed inset-0 z-50 flex origin-bottom-right flex-col bg-void ring-1 ring-steel transition-all duration-300 sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[32rem] sm:max-h-[85vh] sm:w-96 ${
+          isOpen ? 'pointer-events-auto scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0'
+        }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-cyan-900/50 bg-black/60 sm:rounded-t-2xl flex-shrink-0">
+        <div className="flex flex-shrink-0 items-center justify-between border-b border-steel bg-gunmetal px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center text-black font-bold text-sm flex-shrink-0">
-              AI
+            <div className="clip-corner-sm grid h-10 w-10 flex-shrink-0 place-items-center bg-bone text-void">
+              <Radio size={18} aria-hidden="true" />
             </div>
             <div>
-              <div className="text-slate-100 font-bold leading-tight">Digital Twin</div>
-              <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                Online
+              <div className="font-display text-lg font-bold uppercase leading-tight tracking-wide text-bone">Comms handler</div>
+              <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-nv">
+                <span className="h-1.5 w-1.5 rounded-full bg-nv" aria-hidden="true"></span>
+                Online · AI digital twin
               </div>
             </div>
           </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            aria-label="Close chat"
-            className="text-slate-400 hover:text-white p-2 flex-shrink-0"
-          >
-            <X size={20} />
+          <button type="button" onClick={() => setIsOpen(false)} aria-label="Close comms handler" className="flex-shrink-0 p-2 text-ash hover:text-bone">
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 custom-scrollbar">
+        <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4" data-lenis-prevent aria-live="polite">
           {messages.map((m, i) => (
             <ChatBubble key={i} sender={m.sender} text={m.text} isError={m.isError} />
           ))}
           {isSending && (
             <div className="flex justify-start">
-              <div className="bg-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-slate-400 animate-bounce [animation-delay:-0.3s]"></span>
-                <span className="w-2 h-2 rounded-full bg-slate-400 animate-bounce [animation-delay:-0.15s]"></span>
-                <span className="w-2 h-2 rounded-full bg-slate-400 animate-bounce"></span>
+              <div className="flex gap-1.5 bg-gunmetal px-4 py-3 ring-1 ring-inset ring-steel" aria-label="Handler is typing">
+                <span className="h-2 w-2 animate-bounce bg-ash [animation-delay:-0.3s]"></span>
+                <span className="h-2 w-2 animate-bounce bg-ash [animation-delay:-0.15s]"></span>
+                <span className="h-2 w-2 animate-bounce bg-ash"></span>
               </div>
             </div>
           )}
@@ -191,22 +207,30 @@ export default function ChatWidget() {
         </div>
 
         {/* Input */}
-        <form onSubmit={handleSend} className="flex items-center gap-2 px-4 py-4 border-t border-cyan-900/50 bg-black/60 sm:rounded-b-2xl flex-shrink-0">
+        <form onSubmit={handleSend} className="flex flex-shrink-0 items-center gap-2 border-t border-steel bg-gunmetal px-4 py-4">
+          <label htmlFor="comms-input" className="sr-only">
+            Message
+          </label>
+          <span className="font-mono text-nv" aria-hidden="true">
+            &gt;
+          </span>
           <input
+            id="comms-input"
+            ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message..."
+            placeholder="Transmit a message…"
             autoComplete="off"
-            className="flex-1 bg-gray-900 text-white text-sm rounded-full px-4 py-3 border border-gray-700 outline-none focus:border-cyan-500 min-w-0"
+            className="min-w-0 flex-1 bg-transparent py-2 font-mono text-sm text-bone placeholder:text-ash/70 focus:outline-none"
           />
           <button
             type="submit"
             disabled={isSending || !input.trim()}
             aria-label="Send message"
-            className="w-11 h-11 rounded-full bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 disabled:hover:bg-cyan-500 text-black flex items-center justify-center flex-shrink-0 transition-colors"
+            className="clip-corner-sm grid h-10 w-10 flex-shrink-0 place-items-center bg-bone text-void transition-colors hover:bg-white disabled:opacity-40"
           >
-            <Send size={18} />
+            <Send size={16} aria-hidden="true" />
           </button>
         </form>
       </div>

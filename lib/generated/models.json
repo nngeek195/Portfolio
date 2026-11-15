@@ -12,6 +12,57 @@
         "source": "https://sketchfab.com/3d-models/vssk-vykhlop-contract-wars-162cb40bccd24dd498b76c6bcd4f3738",
         "license": "Used under purchased licence"
       },
+      "poster": {
+        "src": "/images/renders/rifle.webp",
+        "width": 2000,
+        "height": 558,
+        "anchors": {
+          "receiver": [
+            39.3,
+            44.03
+          ],
+          "stock": [
+            24.11,
+            64.98
+          ],
+          "magazine": [
+            22.08,
+            71.28
+          ],
+          "cheekrest": [
+            16.38,
+            46.32
+          ],
+          "buttpad": [
+            5.17,
+            60.75
+          ],
+          "handguard": [
+            48.73,
+            56.29
+          ],
+          "foregrip": [
+            53.17,
+            73.31
+          ],
+          "sight_rear": [
+            29.89,
+            36.3
+          ],
+          "sight_front": [
+            54.16,
+            36.52
+          ],
+          "scope": [
+            41.04,
+            25.07
+          ],
+          "suppressor": [
+            76.84,
+            49.59
+          ]
+        }
+      },
       "parts": [
         {
           "name": "receiver",
@@ -136,6 +187,37 @@
         "source": "https://sketchfab.com/3d-models/hk-usp-match-contract-wars-24eccdba4c464cfb87fade3182ad5783",
         "license": "Used under purchased licence"
       },
+      "poster": {
+        "src": "/images/renders/pistol.webp",
+        "width": 1400,
+        "height": 949,
+        "anchors": {
+          "frame": [
+            41.26,
+            55.27
+          ],
+          "magazine": [
+            18.65,
+            91.08
+          ],
+          "guide_rod": [
+            65.03,
+            29.91
+          ],
+          "slide": [
+            46.55,
+            24.53
+          ],
+          "compensator": [
+            74.68,
+            27.06
+          ],
+          "red_dot": [
+            16.82,
+            9.88
+          ]
+        }
+      },
       "parts": [
         {
           "name": "frame",
@@ -210,6 +292,29 @@
         "source": "https://sketchfab.com/3d-models/mh-6-little-bird-low-poly-d7068144bfeb4d91bde5d30755657d97",
         "license": "CC BY 4.0",
         "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "poster": {
+        "src": "/images/renders/heli.webp",
+        "width": 1800,
+        "height": 676,
+        "anchors": {
+          "body": [
+            39.1,
+            49.99
+          ],
+          "canopy": [
+            67.03,
+            52.1
+          ],
+          "rotor_main": [
+            58.48,
+            21.48
+          ],
+          "rotor_tail": [
+            8.29,
+            41.25
+          ]
+        }
       },
       "parts": [
         {

@@ -4,77 +4,89 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
+import { PROFILE } from '@/lib/profile';
+import Placeholder from '@/components/ui/Placeholder';
 
-// Single source of truth for the public site navigation (previously copy-pasted
-// into the home, projects and articles pages).
+// Themed label first, plain label underneath, so nobody has to decode it.
 export const NAV_LINKS = [
-  { label: 'About', href: '/#about' },
-  { label: 'Skills', href: '/#skills' },
-  { label: 'Articles', href: '/articles' },
-  { label: 'Projects', href: '/projects' },
-  { label: 'Contact', href: '/#contact' },
+  { label: 'Dossier', plain: 'About', href: '/#about' },
+  { label: 'Loadout', plain: 'Skills', href: '/#skills' },
+  { label: 'Operations', plain: 'Projects', href: '/#operations', activeOn: '/projects' },
+  { label: 'Service Record', plain: 'Experience', href: '/#experience' },
+  { label: 'Intel', plain: 'Articles', href: '/articles', activeOn: '/articles' },
+  { label: 'Comms', plain: 'Contact', href: '/#contact' },
 ] as const;
 
 export default function SiteNav() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  // Hash links point at home-page sections, so only full routes get an active state.
-  const isActive = (href: string) => !href.startsWith('/#') && pathname === href;
+  const isActive = (link: (typeof NAV_LINKS)[number]) => 'activeOn' in link && pathname === link.activeOn;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-md border-b border-cyan-900/50">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <Link
-          href="/"
-          className="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500"
-        >
-          Niranga Nayanajith
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-steel/70 bg-void/90">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-5 md:px-8">
+        <Link href="/" className="group flex items-center gap-3" aria-label={`${PROFILE.name} — home`}>
+          <span className="clip-corner-sm grid h-9 w-9 place-items-center bg-bone font-stencil text-lg font-bold text-void">NN</span>
+          <span className="leading-tight">
+            <span className="block font-display text-lg font-bold uppercase tracking-wide text-bone">{PROFILE.name}</span>
+            <span className="block font-mono text-[10px] uppercase tracking-[0.25em] text-ash">
+              Callsign:{' '}
+              {PROFILE.callsign ?? <Placeholder id="callsign">[CALLSIGN]</Placeholder>}
+            </span>
+          </span>
         </Link>
 
-        <nav aria-label="Main" className="hidden md:flex gap-8 font-semibold text-slate-300">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              aria-current={isActive(link.href) ? 'page' : undefined}
-              className={`hover:text-cyan-400 transition-colors ${isActive(link.href) ? 'text-cyan-400' : ''}`}
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav aria-label="Main" className="hidden lg:block">
+          <ul className="flex items-center gap-1">
+            {NAV_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  aria-current={isActive(link) ? 'page' : undefined}
+                  className={`group block px-3 py-1.5 transition-colors hover:text-bone ${isActive(link) ? 'text-nv' : 'text-ash'}`}
+                >
+                  <span className="block font-mono text-xs font-semibold uppercase tracking-[0.18em]">{link.label}</span>
+                  <span className="block text-[11px] text-ash/70 group-hover:text-ash">{link.plain}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </nav>
 
         <button
-          onClick={() => setMobileMenuOpen((prev) => !prev)}
-          aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={mobileMenuOpen}
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-expanded={open}
           aria-controls="mobile-nav"
-          className="md:hidden text-slate-200 hover:text-cyan-400 transition-colors p-1"
+          className="p-1 text-bone hover:text-nv lg:hidden"
         >
-          {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
+          {open ? <X size={26} /> : <Menu size={26} />}
         </button>
       </div>
 
       <div
         id="mobile-nav"
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out border-t border-cyan-900/50 bg-black/95 backdrop-blur-md ${
-          mobileMenuOpen ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0 invisible'
+        className={`overflow-hidden border-t border-steel/70 bg-void transition-[max-height,opacity] duration-300 lg:hidden ${
+          open ? 'max-h-[28rem] opacity-100' : 'invisible max-h-0 opacity-0'
         }`}
       >
-        <nav aria-label="Mobile" className="flex flex-col px-6 py-4 gap-1 font-semibold text-slate-300">
-          {NAV_LINKS.map((link, idx) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              onClick={() => setMobileMenuOpen(false)}
-              aria-current={isActive(link.href) ? 'page' : undefined}
-              className={`py-3 hover:text-cyan-400 transition-colors ${
-                idx < NAV_LINKS.length - 1 ? 'border-b border-gray-900' : ''
-              } ${isActive(link.href) ? 'text-cyan-400' : ''}`}
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav aria-label="Mobile">
+          <ul className="px-5 py-3">
+            {NAV_LINKS.map((link, i) => (
+              <li key={link.href} className={i < NAV_LINKS.length - 1 ? 'border-b border-steel/50' : ''}>
+                <Link
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  aria-current={isActive(link) ? 'page' : undefined}
+                  className={`flex items-baseline justify-between py-3 ${isActive(link) ? 'text-nv' : 'text-bone'}`}
+                >
+                  <span className="font-mono text-sm font-semibold uppercase tracking-[0.18em]">{link.label}</span>
+                  <span className="text-sm text-ash">{link.plain}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </nav>
       </div>
     </header>

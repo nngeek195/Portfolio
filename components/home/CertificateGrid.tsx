@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Award, FileText, Loader2 } from 'lucide-react';
+import { Award, ExternalLink, FileText, Loader2 } from 'lucide-react';
 import SmartImage from '@/components/SmartImage';
 import { CERT_PLACEHOLDER } from '@/lib/certificates';
 
@@ -9,10 +9,19 @@ export type CertificateCard = {
   id: string;
   title: string;
   issuer?: string;
+  dateIssued?: string;
   credentialUrl?: string | null;
   link?: string | null;
   mediaUrls?: string[];
 };
+
+// Ribbon colour by kind of commendation (field events vs. courses vs. vendor certs).
+function ribbon(cert: CertificateCard) {
+  const text = `${cert.title} ${cert.issuer ?? ''}`.toLowerCase();
+  if (/hack|xtream|buildathon|challenge|ieee/.test(text)) return { label: 'Field op', bar: 'bg-amber' };
+  if (/microsoft|cisco|finops|wso2|aws|azure/.test(text)) return { label: 'Vendor', bar: 'bg-nv' };
+  return { label: 'Training', bar: 'bg-blueprint' };
+}
 
 // Shows a spinner while a certificate image loads, and falls back to the
 // placeholder (then a plain icon) instead of a broken-image icon on failure.
@@ -20,8 +29,7 @@ function CertImage({ src, alt }: { src: string; alt: string }) {
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
   const [currentSrc, setCurrentSrc] = useState(src);
 
-  // Reset when the parent passes a different image (React's "adjust state
-  // during render" pattern; avoids an extra effect pass).
+  // Reset when the parent passes a different image ("adjust state during render").
   const [prevSrc, setPrevSrc] = useState(src);
   if (src !== prevSrc) {
     setPrevSrc(src);
@@ -30,20 +38,19 @@ function CertImage({ src, alt }: { src: string; alt: string }) {
   }
 
   // An <img> can never render a PDF, so show a badge instead of trying.
-  const isPdf = src.toLowerCase().split('?')[0].endsWith('.pdf');
-  if (isPdf) {
+  if (src.toLowerCase().split('?')[0].endsWith('.pdf')) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-cyan-400">
-        <FileText size={32} />
-        <span className="text-[10px] font-bold uppercase tracking-wide">PDF</span>
+      <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-ash">
+        <FileText size={28} aria-hidden="true" />
+        <span className="font-mono text-[10px] uppercase tracking-widest">PDF</span>
       </div>
     );
   }
 
   if (status === 'error') {
     return (
-      <div className="w-full h-full flex items-center justify-center text-slate-600">
-        <Award size={40} />
+      <div className="flex h-full w-full items-center justify-center text-steel">
+        <Award size={36} aria-hidden="true" />
       </div>
     );
   }
@@ -58,64 +65,99 @@ function CertImage({ src, alt }: { src: string; alt: string }) {
   };
 
   return (
-    <div className="relative w-full h-full">
-      {status === 'loading' && (
-        <Loader2 className="absolute inset-0 m-auto animate-spin text-cyan-400" size={24} />
-      )}
+    <div className="relative h-full w-full">
+      {status === 'loading' && <Loader2 className="absolute inset-0 m-auto animate-spin text-ash" size={20} aria-hidden="true" />}
       <SmartImage
         src={currentSrc}
         alt={alt}
         fill
-        sizes="128px"
+        sizes="(min-width: 1024px) 280px, (min-width: 640px) 45vw, 90vw"
         onLoad={() => setStatus('loaded')}
         onError={handleError}
-        className={`object-contain group-hover:scale-110 transition-all duration-300 ${
-          status === 'loading' ? 'opacity-0' : 'opacity-100'
-        }`}
+        className={`object-contain transition-opacity duration-300 ${status === 'loading' ? 'opacity-0' : 'opacity-100'}`}
       />
     </div>
   );
 }
 
-// Clicking a certificate opens its credential link in a new tab if one exists;
-// cards without a link are inert.
-export default function CertificateGrid({ certificates }: { certificates: CertificateCard[] }) {
+// One commendation card. Cards with a credential link open it in a new tab.
+function CommendationCard({ cert, index }: { cert: CertificateCard; index: number }) {
+  const url = cert.credentialUrl || cert.link || null;
+  const r = ribbon(cert);
+  const body = (
+    <>
+      <div className="flex h-2" aria-hidden="true">
+        <span className={`flex-1 ${r.bar}`} />
+        <span className="w-3 bg-void" />
+        <span className={`w-6 ${r.bar} opacity-60`} />
+      </div>
+      <div className="flex items-center justify-between gap-2 px-3 pt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-ash sm:px-4">
+        <span>CMD-{String(index + 1).padStart(3, '0')}</span>
+        <span className="hidden sm:inline">{r.label}</span>
+      </div>
+      <div className="relative mx-3 mt-3 h-24 bg-bone/[0.06] p-2 sm:mx-4 sm:h-36">
+        <CertImage src={cert.mediaUrls?.[0] || CERT_PLACEHOLDER} alt={`${cert.title} certificate`} />
+      </div>
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
+        <h3 className="font-display text-base font-bold uppercase leading-tight tracking-wide text-bone sm:text-xl">{cert.title}</h3>
+        <p className="mt-1 text-xs text-ash sm:text-sm">{cert.issuer || 'Certification'}</p>
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-1 pt-4 font-mono text-[10px] uppercase tracking-[0.18em] sm:text-[11px]">
+          <span className="text-ash">{cert.dateIssued || '—'}</span>
+          {url && (
+            <span className="flex items-center gap-1 text-nv">
+              Verify <ExternalLink size={12} aria-hidden="true" />
+            </span>
+          )}
+        </div>
+      </div>
+    </>
+  );
+  const base = 'clip-corner flex h-full flex-col bg-gunmetal ring-1 ring-inset ring-steel';
+  return url ? (
+    <a href={url} target="_blank" rel="noopener noreferrer" className={`${base} transition-colors hover:ring-ash`}>
+      {body}
+      <span className="sr-only"> (opens credential in a new tab)</span>
+    </a>
+  ) : (
+    <div className={base}>{body}</div>
+  );
+}
+
+const GRID = 'grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4';
+
+// Commendations: certificate "service ribbon" cards. The first `initial` are
+// always shown; the rest sit behind a native <details> toggle (works without JS).
+export default function CertificateGrid({ certificates, initial = 8 }: { certificates: CertificateCard[]; initial?: number }) {
   if (certificates.length === 0) {
-    return <div className="text-slate-400 text-center py-10">No certificates published yet.</div>;
+    return <p className="py-10 text-center text-ash">No commendations on file yet.</p>;
   }
+  const shown = certificates.slice(0, initial);
+  const rest = certificates.slice(initial);
 
   return (
-    <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-      {certificates.map((cert) => {
-        const url = cert.credentialUrl || cert.link || null;
-        const body = (
-          <>
-            <div className="w-32 h-32 mb-6 bg-white/10 rounded-lg p-2 overflow-hidden">
-              <CertImage src={cert.mediaUrls?.[0] || CERT_PLACEHOLDER} alt={cert.title} />
-            </div>
-            <h3 className="text-xl font-bold text-slate-200 mb-2">{cert.title}</h3>
-            <p className="text-cyan-600 font-medium">{cert.issuer || 'Certification'}</p>
-          </>
-        );
-        const base = 'h-full bg-gray-900 border border-gray-800 p-8 rounded-xl transition-all flex flex-col items-center text-center group';
-
-        return (
+    <>
+      <ul className={GRID}>
+        {shown.map((cert, i) => (
           <li key={cert.id}>
-            {url ? (
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${base} hover:border-cyan-500 hover:-translate-y-2 hover:shadow-[0_0_20px_rgba(34,211,238,0.2)]`}
-              >
-                {body}
-              </a>
-            ) : (
-              <div className={base}>{body}</div>
-            )}
+            <CommendationCard cert={cert} index={i} />
           </li>
-        );
-      })}
-    </ul>
+        ))}
+      </ul>
+      {rest.length > 0 && (
+        <details className="group mt-3 sm:mt-5">
+          <summary className="clip-corner bracket-hover mx-auto flex w-fit cursor-pointer list-none items-center gap-2 bg-gunmetal px-9 py-3.5 font-mono text-sm font-semibold uppercase tracking-[0.2em] text-bone ring-1 ring-inset ring-steel hover:ring-ash group-open:mb-5 [&::-webkit-details-marker]:hidden">
+            <span className="group-open:hidden">Show all {certificates.length} commendations</span>
+            <span className="hidden group-open:inline">Show fewer</span>
+          </summary>
+          <ul className={GRID}>
+            {rest.map((cert, i) => (
+              <li key={cert.id}>
+                <CommendationCard cert={cert} index={initial + i} />
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </>
   );
 }

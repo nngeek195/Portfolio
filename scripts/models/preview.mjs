@@ -9,7 +9,7 @@ const PALETTE = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 /** parts: [{ name, pivot, prims }] with prim positions relative to pivot. */
-function triangles(parts, explode) {
+export function triangles(parts, explode) {
   const all = emptyBounds();
   for (const p of parts)
     for (const prim of p.prims) {
