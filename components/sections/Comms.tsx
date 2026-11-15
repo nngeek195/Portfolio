@@ -8,7 +8,7 @@ import OpenCommsHandler from './OpenCommsHandler';
 import ExtractionEta from './ExtractionEta';
 
 const channelClass =
-  'clip-corner group grid grid-cols-[4.5rem_1fr_auto] items-center gap-4 bg-gunmetal px-5 py-4 ring-1 ring-inset ring-steel transition-colors hover:ring-ash';
+  'clip-corner group grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-4 bg-gunmetal px-5 py-4 ring-1 ring-inset ring-steel transition-colors hover:ring-ash';
 
 // OBJ-07 Comms (Contact). Exfil: on capable desktops the live 3D helicopter
 // (components/three/companion) lands in the extraction panel, its searchlight
@@ -48,7 +48,7 @@ export default function Comms() {
                   <span className="font-mono text-xs text-nv">CH-03</span>
                   <span>
                     <span className="block font-display text-2xl font-bold uppercase tracking-wide text-bone">Email</span>
-                    <span className="block text-sm text-ash">{PROFILE.email}</span>
+                    <span className="block text-sm text-ash [overflow-wrap:anywhere]">{PROFILE.email}</span>
                   </span>
                   <Mail size={26} className="text-bone" aria-hidden="true" />
                 </a>
