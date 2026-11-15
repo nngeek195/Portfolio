@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { LOADOUT } from '@/lib/loadout';
 import { model } from '@/lib/models';
 import { LOADOUT_PROGRESS_EVENT, type LoadoutProgressDetail } from '@/components/scenes/LoadoutScene';
+import { loadoutApproach } from '@/lib/motion/heli';
 import { prepareModel, setGlow } from '../nightVision';
 import ModelView, { ReadySignal } from './ModelView';
 
@@ -28,6 +29,9 @@ const EXPLODE: Record<string, [number, number, number]> = {
 };
 
 const smooth = (t: number) => t * t * (3 - 2 * t);
+// Air drop: parts start this far above their exploded positions (metres) and
+// come down, module by module, as the helicopter passes over (see loadoutApproach).
+const DROP_HEIGHT = 0.75;
 
 function Rifle({ onReady }: { onReady: () => void }) {
   const { scene } = useGLTF(URL, false, true);
@@ -64,6 +68,8 @@ function Rifle({ onReady }: { onReady: () => void }) {
     const p = (current.current = THREE.MathUtils.damp(current.current, target.current.progress, 6, delta));
     const t = state.clock.elapsedTime;
     const n = LOADOUT.length;
+    const stage = document.querySelector('#skills [data-loadout="stage"]');
+    const approach = stage ? loadoutApproach(stage.getBoundingClientRect().top, window.innerHeight) : 1;
 
     LOADOUT.forEach((module, i) => {
       const assembled = smooth(THREE.MathUtils.clamp(p * n - i, 0, 1));
@@ -74,7 +80,9 @@ function Rifle({ onReady }: { onReady: () => void }) {
         if (!part || !home || !off) continue;
         const loose = 1 - assembled;
         const bob = Math.sin(t * 1.4 + i) * 0.006 * loose;
-        part.position.set(home.x + off[0] * loose, home.y + off[1] * loose + bob, home.z + off[2] * loose);
+        const landed = smooth(THREE.MathUtils.clamp((approach - 0.52 - i * 0.04) / 0.26, 0, 1));
+        const fall = (1 - landed) * DROP_HEIGHT;
+        part.position.set(home.x + off[0] * loose, home.y + off[1] * loose + bob + fall, home.z + off[2] * loose);
       }
     });
 
