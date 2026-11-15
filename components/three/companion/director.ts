@@ -6,10 +6,13 @@ import { hero } from './segments/hero';
 import { dossier } from './segments/dossier';
 import { loadout } from './segments/loadout';
 import { ops } from './segments/ops';
+import { comms } from './segments/comms';
+import { debrief } from './segments/debrief';
 
-// Section segments in page order. The first one that returns a pose flies the
-// helicopter; when none does (between scenes) it patrols.
-const SEGMENTS: Segment[] = [hero, dossier, loadout, ops];
+// Section segments, in page order except that Debrief takes over from Comms as
+// soon as it arrives. The first one that returns a pose flies the helicopter;
+// when none does (between scenes) it patrols.
+const SEGMENTS: Segment[] = [hero, dossier, loadout, ops, debrief, comms];
 
 /**
  * Flight director: once per frame, works out where the helicopter should be

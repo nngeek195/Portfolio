@@ -4,15 +4,14 @@ import { useCallback, useEffect, useId, useRef, useState, type ComponentType } f
 import dynamic from 'next/dynamic';
 import { useThree3D } from './ThreeProvider';
 
-export type ModelKind = 'rifle' | 'pistol' | 'heli-comms' | 'heli-debrief';
+export type ModelKind = 'rifle' | 'pistol';
 
-// Each model view is its own lazy chunk (they share the three.js chunk).
+// Each model view is its own lazy chunk (they share the three.js chunk). The
+// helicopter is not a slot: it flies the whole page (components/three/companion).
 // A kind without a view keeps its flat render.
 const VIEWS: Partial<Record<ModelKind, ComponentType<{ onReady: () => void }>>> = {
   rifle: dynamic(() => import('./views/RifleView'), { ssr: false }),
   pistol: dynamic(() => import('./views/PistolView'), { ssr: false }),
-  'heli-comms': dynamic(() => import('./views/HeliView').then((m) => m.HeliCommsView), { ssr: false }),
-  'heli-debrief': dynamic(() => import('./views/HeliView').then((m) => m.HeliDebriefView), { ssr: false }),
 };
 
 /**
