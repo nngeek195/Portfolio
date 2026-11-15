@@ -34,7 +34,17 @@ export async function GET(request: NextRequest) {
       );
 
       if (!response.ok) {
-        throw new Error(`GitHub API responded with status: ${response.status}`);
+        const details = await response.text();
+
+        console.error('GitHub API error:', {
+          status: response.status,
+          message: details,
+          page,
+        });
+
+        throw new Error(
+          `GitHub API responded with status: ${response.status}`
+        );
       }
 
       const pageRepos = await response.json();
