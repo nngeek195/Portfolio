@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { LOADOUT } from '@/lib/loadout';
 import { model } from '@/lib/models';
-import { LOADOUT_PROGRESS_EVENT, type LoadoutProgressDetail } from '@/components/scenes/LoadoutScene';
 import { loadoutApproach } from '@/lib/motion/heli';
+import { sceneProgress } from '@/lib/motion/scene-progress';
 import { dbg, dbgEvent } from '@/lib/debug';
 import { prepareModel, setGlow } from '../nightVision';
 import ModelView, { ReadySignal } from './ModelView';
@@ -37,6 +37,7 @@ const DROP_HEIGHT = 0.75;
 function Rifle({ onReady }: { onReady: () => void }) {
   const { scene } = useGLTF(URL, false, true);
   const root = useMemo(() => scene.clone(true), [scene]);
+  const invalidate = useThree((s) => s.invalidate);
 
   // Per-frame state lives in a ref (three.js objects are mutated every frame).
   const rig = useRef<{ rifle: THREE.Object3D; parts: Map<string, THREE.Object3D>; base: Map<string, THREE.Vector3>; materials: Map<string, THREE.MeshStandardMaterial[]> } | null>(null);
@@ -52,26 +53,22 @@ function Rifle({ onReady }: { onReady: () => void }) {
     };
     dbg.rifle.loaded = true;
     dbgEvent('rifle model ready');
+    invalidate(); // draw the correct pose right away, even if the canvas is rendering on demand
     return () => void (dbg.rifle.loaded = false);
-  }, [root]);
+  }, [root, invalidate]);
 
-  const target = useRef({ progress: 0, index: 0 });
-  const current = useRef(0);
   const glowing = useRef(-1);
 
-  useEffect(() => {
-    const onProgress = (e: Event) => (target.current = (e as CustomEvent<LoadoutProgressDetail>).detail);
-    window.addEventListener(LOADOUT_PROGRESS_EVENT, onProgress);
-    return () => window.removeEventListener(LOADOUT_PROGRESS_EVENT, onProgress);
-  }, []);
-
-  useFrame((state, delta) => {
+  useFrame((state) => {
     const r = rig.current;
     if (!r) return;
     const { rifle, parts, base, materials } = r;
-    const p = (current.current = THREE.MathUtils.damp(current.current, target.current.progress, 6, delta));
-    const t = state.clock.elapsedTime;
     const n = LOADOUT.length;
+    // Pose = pure function of the scroll position: progress is read from the scene's trigger at
+    // render time (set, never accumulated). Scene not running (e.g. ?3d=on on a small screen): assembled.
+    const sp = sceneProgress('loadout');
+    const p = sp < 0 ? 1 : sp;
+    const t = state.clock.elapsedTime;
     const stage = document.querySelector('#skills [data-loadout="stage"]');
     const approach = stage ? loadoutApproach(stage.getBoundingClientRect().top, window.innerHeight) : 1;
 
@@ -91,7 +88,7 @@ function Rifle({ onReady }: { onReady: () => void }) {
     });
 
     // Diagnostics: how far each part is from the pose the *current* scroll position calls for.
-    const expected = dbg.triggers.loadout ? dbg.triggers.loadout.progress : -1;
+    const expected = sp;
     let maxErr = 0;
     if (expected >= 0)
       LOADOUT.forEach((module, i) => {
@@ -108,7 +105,7 @@ function Rifle({ onReady }: { onReady: () => void }) {
     Object.assign(dbg.rifle, { applied: p, expected, approach, maxPartErr: maxErr, lastFrameAt: performance.now(), frameScrollY: window.scrollY });
 
     // Glow the active module (pulse); clear the previous one.
-    const active = target.current.index;
+    const active = Math.min(n - 1, Math.floor(p * n));
     if (glowing.current !== active) {
       LOADOUT[glowing.current]?.modelParts.forEach((name) => setGlow(materials.get(name), 0));
       glowing.current = active;

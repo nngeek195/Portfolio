@@ -4,7 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
-import { dbg } from '@/lib/debug';
+import { registerScene } from '@/lib/motion/scene-progress';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -44,7 +44,7 @@ export default function LoadoutScene({ count }: { count: number }) {
       };
       activate(0);
 
-      dbg.triggers.loadout = ScrollTrigger.create({
+      const st = ScrollTrigger.create({
         trigger: stage,
         start: 'top top+=88',
         end: `+=${count * 55}%`,
@@ -52,16 +52,20 @@ export default function LoadoutScene({ count }: { count: number }) {
         scrub: true,
         invalidateOnRefresh: true,
         animation: scan ? gsap.fromTo(scan, { left: '2%' }, { left: '98%', ease: 'none' }) : undefined,
+        // Also on refresh (resize, late layout): the active module must match the scroll position.
+        onRefresh: (self) => activate(Math.min(count - 1, Math.floor(self.progress * count))),
         onUpdate: (self) => {
           const index = Math.min(count - 1, Math.floor(self.progress * count));
           activate(index);
           window.dispatchEvent(new CustomEvent<LoadoutProgressDetail>(LOADOUT_PROGRESS_EVENT, { detail: { progress: self.progress, index } }));
         },
       });
+      const unregister = registerScene('loadout', st);
       // The layout switched; recompute every trigger below this one.
       ScrollTrigger.refresh();
 
       return () => {
+        unregister();
         delete section.dataset.scene;
         rows.forEach((r) => delete r.dataset.active);
       };

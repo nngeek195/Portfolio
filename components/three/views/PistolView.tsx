@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { SIDEARM_TRAITS } from '@/lib/profile';
 import { model } from '@/lib/models';
-import { DOSSIER_PROGRESS_EVENT, type DossierProgressDetail } from '@/components/scenes/DossierScene';
+import { sceneProgress } from '@/lib/motion/scene-progress';
 import { prepareModel, setGlow } from '../nightVision';
 import ModelView, { ReadySignal } from './ModelView';
 import { dbg } from '@/lib/debug';
@@ -34,6 +34,7 @@ const smooth = (t: number) => t * t * (3 - 2 * t);
 function Pistol({ onReady }: { onReady: () => void }) {
   const { scene } = useGLTF(URL, false, true);
   const root = useMemo(() => scene.clone(true), [scene]);
+  const invalidate = useThree((s) => s.invalidate);
 
   // Per-frame state lives in a ref (three.js objects are mutated every frame).
   const rig = useRef<{ pistol: THREE.Object3D; base: Map<string, THREE.Vector3>; materials: Map<string, THREE.MeshStandardMaterial[]> } | null>(null);
@@ -43,23 +44,19 @@ function Pistol({ onReady }: { onReady: () => void }) {
     const pistol = root.getObjectByName('frame')?.parent ?? root;
     rig.current = { pistol, base: new Map(pistol.children.map((c) => [c.name, c.position.clone()])), materials: prepareModel(pistol) };
     dbg.pistol.loaded = true;
-  }, [root]);
-  const target = useRef(0);
-  const current = useRef(0);
+    invalidate();
+    return () => void (dbg.pistol.loaded = false);
+  }, [root, invalidate]);
 
-  useEffect(() => {
-    const onProgress = (e: Event) => (target.current = (e as CustomEvent<DossierProgressDetail>).detail.progress);
-    window.addEventListener(DOSSIER_PROGRESS_EVENT, onProgress);
-    return () => window.removeEventListener(DOSSIER_PROGRESS_EVENT, onProgress);
-  }, []);
-
-  useFrame((state, delta) => {
+  useFrame((state) => {
     const r = rig.current;
     if (!r) return;
     const { pistol, base, materials } = r;
-    const p = (current.current = THREE.MathUtils.damp(current.current, target.current, 7, delta));
+    // Pure function of the scroll position (see RifleView). Scene not running: assembled.
+    const sp = sceneProgress('dossier');
+    const p = sp < 0 ? 0 : sp;
     const t = state.clock.elapsedTime;
-    Object.assign(dbg.pistol, { applied: p, expected: dbg.triggers.dossier?.progress ?? -1, lastFrameAt: performance.now() });
+    Object.assign(dbg.pistol, { applied: p, expected: sp, lastFrameAt: performance.now() });
     const back = smooth(THREE.MathUtils.clamp((p - REASSEMBLE[0]) / (REASSEMBLE[1] - REASSEMBLE[0]), 0, 1));
 
     for (const part of pistol.children) {

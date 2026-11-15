@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { dbg, dbgEvent } from '@/lib/debug';
 import { PerformanceMonitor, View } from '@react-three/drei';
 import * as THREE from 'three';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 // Continuous frames only while something 3D is on screen. Otherwise render on
 // demand: one frame per scroll event, so the companion helicopter can notice
@@ -21,6 +22,20 @@ function FrameloopController({ active }: { active: boolean }) {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [active, setFrameloop, invalidate]);
+  return null;
+}
+
+/**
+ * Every ScrollTrigger refresh (resize, late layout) can move the scenes' start/end, which changes
+ * the pose for the current scroll position: draw a frame so the views re-apply it right away.
+ */
+function RefreshInvalidator() {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    const onRefresh = () => invalidate();
+    ScrollTrigger.addEventListener('refresh', onRefresh);
+    return () => ScrollTrigger.removeEventListener('refresh', onRefresh);
+  }, [invalidate]);
   return null;
 }
 
@@ -76,6 +91,7 @@ export default function SharedCanvas({ active, onFallback }: { active: boolean; 
         }}
       />
       <FrameCounter />
+      <RefreshInvalidator />
       <View.Port />
       <FrameloopController active={active} />
     </Canvas>

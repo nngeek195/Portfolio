@@ -4,7 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
-import { dbg } from '@/lib/debug';
+import { registerScene } from '@/lib/motion/scene-progress';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -52,7 +52,6 @@ export default function DossierScene() {
         },
       });
 
-      dbg.triggers.dossier = tl.scrollTrigger;
       const barStep = 0.72 / Math.max(bars.length, 1);
       bars.forEach((bar, i) => tl.to(bar, { scaleX: 0, duration: barStep * 1.4, ease: 'power2.inOut' }, i * barStep));
 
@@ -65,6 +64,7 @@ export default function DossierScene() {
 
       if (stamp) tl.to(stamp, { opacity: 1, scale: 1, rotation: -6, duration: 0.14, ease: 'power4.in' }, 0.78);
       tl.to({}, { duration: 0.08 }); // hold on the cleared file
+      return registerScene('dossier', tl.scrollTrigger);
     });
     return () => mm.revert();
   });
