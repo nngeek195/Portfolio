@@ -6,7 +6,7 @@ import { getCapable } from '@/lib/three-capability';
 //
 //   auth    the app has hydrated (the controller is running)
 //   fonts   document.fonts.ready
-//   nvg     hero helicopter still + profile photos decoded (others pages: window load)
+//   nvg     hero helicopter still + the first profile photo decoded (other pages: window load)
 //   engine  the three.js chunk downloaded and evaluated (prefetch only, no scene)
 //   assets  heli.glb, rifle.glb, pistol.glb fetched into the HTTP cache, byte by byte
 //           (prefetch only: nothing is parsed or built here)
@@ -78,10 +78,10 @@ export function startBootProgress(): BootProgress {
 
   // nvg: the hero still and the profile photos (lazy by default: load them now).
   if (home) {
-    const imgs = [
-      ...document.querySelectorAll<HTMLImageElement>('[data-hero="heli"]'),
-      ...document.querySelectorAll<HTMLImageElement>('#about figure img'),
-    ];
+    // Only the profile photo that shows first: the rest stay lazy, so they don't compete
+    // with the app's own code on a slow connection.
+    const firstPhoto = document.querySelector<HTMLImageElement>('#about figure img');
+    const imgs = [...document.querySelectorAll<HTMLImageElement>('[data-hero="heli"]'), ...(firstPhoto ? [firstPhoto] : [])];
     imgs.forEach((img) => img.loading === 'lazy' && (img.loading = 'eager'));
     let settled = 0;
     if (!imgs.length) set('nvg', 1);
