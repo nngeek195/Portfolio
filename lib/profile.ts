@@ -47,66 +47,43 @@ export const SIDEARM_TRAITS = [
 ] as const;
 
 export type ServiceEntry = {
+  /** As it should read, e.g. 'Jun 2025', 'Jun 2025 – Present', 'Present'. */
   date: string;
   type: 'Education' | 'Hackathon' | 'Competition' | 'Role';
   title: string;
   org: string;
+  /** Optional one-line description (your role, team, result). */
   detail?: string;
-  // Marks an entry (or its detail line) as unconfirmed placeholder content.
-  placeholder?: string;
 };
 
-// Service Record timeline, newest first.
-// The competition entries come from your certificates; their detail lines are
-// placeholders until you add your role / team / result.
-// PLACEHOLDER: experience — add internships, jobs, volunteering, club roles.
+// Service Record timeline, newest first. Only real entries: anything added
+// here appears on the site automatically (the "Role" type label and the
+// section intro adapt to what's listed).
+//
+// To add a role (internship, job, volunteering, club position), copy this
+// into the list at the right place in date order:
+//
+//   {
+//     date: 'Jun 2025 – Present',
+//     type: 'Role',
+//     title: 'Software Engineering Intern',
+//     org: 'Company name',
+//     detail: 'What you worked on and the result.',
+//   },
+//
+// The competitions come from your certificates; add a `detail` line to any of
+// them (role, team, result) when you want it shown.
 export const SERVICE_RECORD: ServiceEntry[] = [
+  { date: 'Oct 2025', type: 'Hackathon', title: 'AI Buildathon', org: 'IEEE Computer Society of KDU' },
+  { date: 'Oct 2025', type: 'Hackathon', title: "J'pura Xtream 2025", org: 'IEEE Student Branch, University of Sri Jayewardenepura' },
+  { date: 'Nov 2024', type: 'Competition', title: 'Innovate with Ballerina Coding Challenge', org: 'WSO2' },
+  { date: 'Nov 2024', type: 'Hackathon', title: 'MoraXtreme', org: 'IEEE Student Branch, University of Moratuwa' },
   {
-    date: '[DATE]',
-    type: 'Role',
-    title: '[ROLE / INTERNSHIP]',
-    org: '[ORGANISATION]',
-    detail: 'Add your roles, internships and volunteering in lib/profile.ts.',
-    placeholder: 'experience',
-  },
-  {
-    date: 'Oct 2025',
-    type: 'Hackathon',
-    title: 'AI Buildathon',
-    org: 'IEEE Computer Society of KDU',
-    detail: '[Role, team and result]',
-    placeholder: 'experience',
-  },
-  {
-    date: 'Oct 2025',
-    type: 'Hackathon',
-    title: "J'pura Xtream 2025",
-    org: 'IEEE Student Branch, University of Sri Jayewardenepura',
-    detail: '[Role, team and result]',
-    placeholder: 'experience',
-  },
-  {
-    date: 'Nov 2024',
-    type: 'Competition',
-    title: 'Innovate with Ballerina Coding Challenge',
-    org: 'WSO2',
-    detail: '[Role, team and result]',
-    placeholder: 'experience',
-  },
-  {
-    date: 'Nov 2024',
-    type: 'Hackathon',
-    title: 'MoraXtreme',
-    org: 'IEEE Student Branch, University of Moratuwa',
-    detail: '[Role, team and result]',
-    placeholder: 'experience',
-  },
-  {
-    date: '[START YEAR] – Present',
+    // Start year not known yet: add it as e.g. '2023 – Present'.
+    date: 'Present',
     type: 'Education',
     title: 'Undergraduate, Faculty of Computing',
     org: 'Sabaragamuwa University of Sri Lanka',
     detail: 'Computing and information systems.',
-    placeholder: 'experience',
   },
 ];
