@@ -3,10 +3,11 @@ import { DOSSIER_PROGRESS_EVENT, type DossierProgressDetail } from '@/components
 import type { DirectorContext, Pose, Segment, Signals } from './types';
 import { patrol } from './segments/patrol';
 import { hero } from './segments/hero';
+import { dossier } from './segments/dossier';
 
 // Section segments in page order. The first one that returns a pose flies the
 // helicopter; when none does (between scenes) it patrols.
-const SEGMENTS: Segment[] = [hero];
+const SEGMENTS: Segment[] = [hero, dossier];
 
 /**
  * Flight director: once per frame, works out where the helicopter should be
