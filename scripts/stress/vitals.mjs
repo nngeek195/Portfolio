@@ -16,6 +16,8 @@ const RUNS = Number(arg('runs', '3'));
 const NET = arg('net', '');
 const CPU = Number(arg('cpu', '1'));
 const [W, H] = arg('size', '1440x900').split('x').map(Number);
+// --seen: mark the boot preloader as already seen this session (second-visit behaviour).
+const SEEN = process.argv.includes('--seen');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // DevTools "Slow 4G" preset.
 const PRESETS = { slow4g: { latency: 562.5, downloadThroughput: (1.44 * 1024 * 1024) / 8, uploadThroughput: (675 * 1024) / 8 } };
@@ -51,7 +53,9 @@ const rows = [];
 for (let r = 0; r < RUNS; r++) {
   await send('Network.clearBrowserCache');
   await send('Network.setCacheDisabled', { cacheDisabled: false });
-  await ev('sessionStorage.clear()').catch(() => {});
+  await send('Page.navigate', { url: new URL('/favicon.ico', URL_).href });
+  await sleep(300);
+  await ev(`sessionStorage.clear(); ${SEEN ? "sessionStorage.setItem('boot:seen','1');" : ''}`).catch(() => {});
   await send('Page.navigate', { url: URL_ });
   await sleep(NET ? 16000 : 9000);
   const v = await ev(`({ ...window.__v, bootDone: window.__bootDoneAt ?? null })`);

@@ -21,7 +21,7 @@ values and `[...]` entries there.
 
 | ID | Where it shows | Where to fill it in |
 |---|---|---|
-| `callsign` | Nav, Hero ("Operation // …"), Personnel File, and the 3D helicopter's tail number (amber `[CALLSIGN]` decal on the rear fuselage) | `PROFILE.callsign` in `lib/profile.ts`; the tail number picks it up automatically (`components/three/companion/CompanionHeli.tsx`) |
+| `callsign` | Nav, Hero ("Operation // …"), Personnel File, the boot preloader's HUD, and the 3D helicopter's tail number (amber `[CALLSIGN]` decal on the rear fuselage) | `PROFILE.callsign` in `lib/profile.ts`; the tail number picks it up automatically (`components/three/companion/CompanionHeli.tsx`) |
 | `hero-art` | Hero, right-hand frame (currently a generic operator silhouette) | Send operator art: layered PNG/WebP, about 2560px wide |
 | `featured-projects` | Operations ("Showing latest 6 — feature projects in the admin"); disappears once any project is featured | Admin → Importers & Sync → Manage Live Content → ★ Feature (optional order number) |
 
