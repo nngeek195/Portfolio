@@ -1,12 +1,37 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState, useSyncExternalStore } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
 
 // The shared WebGL canvas (three.js, R3F, drei) is a separate lazy chunk: it is
 // only downloaded once a 3D section is about to come into view.
 const SharedCanvas = dynamic(() => import('./SharedCanvas'), { ssr: false });
+// The companion helicopter that flies the whole page (its own chunk, same three.js chunk).
+const CompanionHeli = dynamic(() => import('./companion/CompanionHeli'), { ssr: false });
+
+/**
+ * Calls back once the page has finished loading, the hero's CSS intro has
+ * played (~2.4 s) and the main thread is idle, so the 3D helicopter never
+ * competes with first paint / LCP.
+ */
+function whenIdleAfterLoad(cb: () => void) {
+  let cancelled = false;
+  let idleId = 0;
+  const idle = () => {
+    if (cancelled) return;
+    const ric = window.requestIdleCallback ?? ((f: () => void) => window.setTimeout(f, 200));
+    idleId = ric(() => !cancelled && cb(), { timeout: 3000 });
+  };
+  const afterIntro = () => window.setTimeout(idle, Math.max(0, 2600 - performance.now()));
+  if (document.readyState === 'complete') afterIntro();
+  else window.addEventListener('load', afterIntro, { once: true });
+  return () => {
+    cancelled = true;
+    window.removeEventListener('load', afterIntro);
+    window.cancelIdleCallback?.(idleId);
+  };
+}
 
 type ThreeContextValue = {
   /** 3D allowed on this device (decided once on the client; false on the server). */
@@ -59,6 +84,7 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
   const [canvasRequested, setCanvasRequested] = useState(false);
   const [visible, setVisibleSet] = useState<ReadonlySet<string>>(() => new Set());
 
+  const [companion, setCompanion] = useState(false);
   const requestCanvas = useCallback(() => setCanvasRequested(true), []);
   const setVisible = useCallback((id: string, isVisible: boolean) => {
     setVisibleSet((prev) => {
@@ -77,12 +103,23 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
   }, []);
   const active3D = enabled && !fellBack;
 
+  // Swap the hero's pre-rendered helicopter for the live one once the page is idle.
+  useEffect(() => {
+    if (!active3D) return;
+    return whenIdleAfterLoad(() => {
+      setCanvasRequested(true);
+      setCompanion(true);
+    });
+  }, [active3D]);
+  const onCompanionVisible = useCallback((v: boolean) => setVisible('companion', v), [setVisible]);
+
   const value = useMemo(() => ({ enabled: active3D, requestCanvas, setVisible }), [active3D, requestCanvas, setVisible]);
 
   return (
     <ThreeContext.Provider value={value}>
       {children}
       {active3D && canvasRequested && <SharedCanvas active={visible.size > 0} onFallback={onFallback} />}
+      {active3D && companion && <CompanionHeli onVisible={onCompanionVisible} />}
     </ThreeContext.Provider>
   );
 }

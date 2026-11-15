@@ -235,6 +235,18 @@ body {
 }
 
 /* ==========================================================================
+   Companion helicopter (components/three/companion). While the live 3D
+   helicopter flies, the flat stills it replaces fade out (they stay in the
+   layout: the hero still keeps animating as the 3D one's flight guide).
+   ========================================================================== */
+[data-heli-still] {
+  transition: opacity 0.7s ease;
+}
+html[data-heli-live] [data-heli-still] {
+  opacity: 0 !important;
+}
+
+/* ==========================================================================
    Intel viewer content (public project/article popup)
    ========================================================================== */
 .intel-prose a,

@@ -19,7 +19,8 @@ export default function Hero() {
       {/* Night-vision power-on flash (CSS, once, on load; off with reduced motion) */}
       <div className="nv-flash pointer-events-none absolute inset-0 z-10 bg-nv mix-blend-screen" aria-hidden="true" />
 
-      {/* Helicopter flying over (pre-rendered silhouette of public/models/heli.glb) */}
+      {/* Helicopter flying over (pre-rendered silhouette of public/models/heli.glb). First paint / LCP
+          uses this still; on capable desktops the live 3D helicopter takes its place once the page is idle. */}
       <Image
         src={heli.src}
         width={heli.width}
@@ -29,6 +30,7 @@ export default function Hero() {
         preload
         sizes="(min-width: 1024px) 42vw, 80vw"
         data-hero="heli"
+        data-heli-still
         className="intro-heli absolute right-[4%] top-[14%] -z-20 w-[80vw] max-w-[760px] -rotate-3 opacity-90 lg:w-[42vw]"
       />
 

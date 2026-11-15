@@ -5,13 +5,19 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { PerformanceMonitor, View } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Render frames only while a 3D slot is on screen; otherwise stop entirely.
+// Continuous frames only while something 3D is on screen. Otherwise render on
+// demand: one frame per scroll event, so the companion helicopter can notice
+// when its flight path brings it back into view (and nothing renders at rest).
 function FrameloopController({ active }: { active: boolean }) {
   const setFrameloop = useThree((s) => s.setFrameloop);
   const invalidate = useThree((s) => s.invalidate);
   useEffect(() => {
-    setFrameloop(active ? 'always' : 'never');
-    if (!active) invalidate(); // one last frame so views clear cleanly
+    setFrameloop(active ? 'always' : 'demand');
+    invalidate(); // one frame so views clear / re-check cleanly
+    if (active) return;
+    const onScroll = () => invalidate();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, [active, setFrameloop, invalidate]);
   return null;
 }

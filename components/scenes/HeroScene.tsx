@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
+import { HERO_PROGRESS_EVENT, type HeroProgressDetail } from '@/lib/motion/heli';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -13,6 +14,8 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  *   0.45–0.70  goggles flip up: night-vision green drains to grey (NVG: OFF)
  *   0.72–1.00  eyelids close to a balaclava eye slit, handing over to the dossier
  * Markup hooks are data-hero="…" attributes in components/sections/Hero.tsx.
+ * Emits HERO_PROGRESS_EVENT; the live 3D helicopter (when running) follows the
+ * still's animated position, so the still keeps animating even when hidden.
  */
 export default function HeroScene() {
   useGSAP(() => {
@@ -22,6 +25,10 @@ export default function HeroScene() {
       if (!section) return;
       const $ = (name: string) => section.querySelector<HTMLElement | SVGElement>(`[data-hero="${name}"]`);
       const nvg = $('nvg');
+      // GSAP folds the element's CSS `translate`/`rotate` into its own transform when it first
+      // reads it. The CSS intro is usually still mid-flight (translate: 14vw -2vh) at that moment,
+      // which would leave the still parked ~14vw to the right: start from a clean x/y.
+      gsap.set($('heli'), { x: 0, y: 0 });
 
       const tl = gsap.timeline({
         defaults: { ease: 'none' },
@@ -33,6 +40,7 @@ export default function HeroScene() {
           scrub: 0.6,
           onUpdate: (self) => {
             if (nvg) nvg.textContent = self.progress > 0.52 ? 'OFF' : 'ON';
+            window.dispatchEvent(new CustomEvent<HeroProgressDetail>(HERO_PROGRESS_EVENT, { detail: { progress: self.progress } }));
           },
         },
       });
