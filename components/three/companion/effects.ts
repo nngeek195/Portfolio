@@ -224,11 +224,13 @@ export function makeParticles(pixelRatio: number) {
   return {
     points,
     /** Heli at (hx, hy) scene px with rotor radius r; ground at gy (scene px) with dust strength d. Returns true while dust is alive. */
-    update(dt: number, W: number, H: number, hx: number, hy: number, r: number, gy: number | null, d: number, wash: number) {
+    update(dt: number, W: number, H: number, hx: number, hy: number, r: number, gy: number | null, d: number, wash: number, scrolled: number) {
       if (!seeded) {
         for (let i = 0; i < MOTES; i++) seedMote(i, W, H);
         seeded = true;
       }
+      // Particles belong to the page: move them with it when it scrolls (scene y is up).
+      if (scrolled) for (let i = 0; i < MOTES + DUST; i++) pos[i * 3 + 1] += scrolled;
       // Airborne motes: slow drift; pushed outward and down inside the rotor wash.
       for (let i = 0; i < MOTES; i++) {
         const ix = i * 3, iv = i * 2;
@@ -277,7 +279,7 @@ export function makeParticles(pixelRatio: number) {
         vel[iv] *= 1 - 1.6 * dt;
         vel[iv + 1] -= 60 * dt;
         pos[i * 3] += vel[iv] * dt;
-        pos[i * 3 + 1] = Math.max((gy ?? 0) - 4, pos[i * 3 + 1] + vel[iv + 1] * dt);
+        pos[i * 3 + 1] = Math.max((gy ?? -Infinity) - 4, pos[i * 3 + 1] + vel[iv + 1] * dt);
         const k = life[i] / maxLife[i];
         alpha[i] = Math.sin(Math.PI * k) * 0.55;
       }

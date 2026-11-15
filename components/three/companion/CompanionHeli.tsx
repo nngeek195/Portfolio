@@ -174,7 +174,8 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
     // Scroll velocity (px/s), smoothed.
     const sy = window.scrollY;
     if (!r.started) r.lastScroll = sy;
-    r.scrollV = damp(r.scrollV, (sy - r.lastScroll) / Math.max(delta, 1e-3), 6, dt);
+    const scrolled = sy - r.lastScroll;
+    r.scrollV = damp(r.scrollV, scrolled / Math.max(delta, 1e-3), 6, dt);
     r.lastScroll = sy;
 
     // Heading target. Side view keeps yaw in [-PI, 0] so turns pass through a front view.
@@ -285,7 +286,7 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
     } else shadowMat.opacity = 0;
 
     // Dust + rotor wash on nearby motes.
-    const dustAlive = particles.update(dt, W, H, r.x - W / 2, H / 2 - r.y, r.size * 0.42, groundY === null ? null : H / 2 - groundY, r.dust, side * blur);
+    const dustAlive = particles.update(dt, W, H, r.x - W / 2, H / 2 - r.y, r.size * 0.42, groundY === null ? null : H / 2 - groundY, r.dust, side * blur, scrolled);
 
     // --- visibility: keep frames running only while something is on screen ----
     const m = r.size * 0.7;
