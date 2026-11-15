@@ -90,6 +90,9 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
   // Handoff: the flat helicopter mounts first; 3D switches off once it has drawn (onFlatReady).
   const [flatMounted, setFlatMounted] = useState(false);
   const onFlatReady = useCallback(() => setFellBack(true), []);
+  // The helicopter model couldn't be loaded (twice): fly the flat one, keep the other 3D views.
+  const [heliFailed, setHeliFailed] = useState(false);
+  const onHeliFailed = useCallback(() => setHeliFailed(true), []);
   const fallbackPending = useRef(false);
   const [canvasRequested, setCanvasRequested] = useState(false);
   const [visible, setVisibleSet] = useState<ReadonlySet<string>>(() => new Set());
@@ -160,8 +163,8 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
     <ThreeContext.Provider value={value}>
       {children}
       {active3D && canvasRequested && <SharedCanvas active={visible.size > 0} onFallback={onFallback} />}
-      {active3D && companion && <CompanionHeli onVisible={onCompanionVisible} />}
-      {enabled && flatMounted && <FlatCompanion onReady={onFlatReady} />}
+      {active3D && companion && !heliFailed && <CompanionHeli onVisible={onCompanionVisible} onFailed={onHeliFailed} />}
+      {enabled && (flatMounted || heliFailed) && <FlatCompanion onReady={flatMounted ? onFlatReady : undefined} />}
       <DebugOverlay />
     </ThreeContext.Provider>
   );

@@ -261,6 +261,20 @@ async function main() {
         await sleep(1500);
         console.log('  (after fallback: ' + JSON.stringify(await ev('({ fellBack: __dbg.three.fellBack, owner: __dbg.heli.owner })')) + ')');
       },
+      async modelfail() {
+        // The helicopter model can't be downloaded (blocked): after one retry the flat helicopter
+        // must take over; the rest of the 3D (rifle) keeps working.
+        await send('Network.enable');
+        await send('Network.setBlockedURLs', { urls: ['*heli.glb*'] });
+        await send('Page.reload');
+        await sleep(11000);
+        await ev(SAMPLER);
+        const m = await maxY();
+        for (let i = 0; i < 8; i++) { await jump(Math.round(Math.random() * m)); await sleep(1400); }
+        console.log('  (model blocked: ' + JSON.stringify(await ev('({ owner: __dbg.heli.owner, fellBack: __dbg.three.fellBack, rifle3D: __dbg.three.enabled })')) + ')');
+        await send('Network.setBlockedURLs', { urls: [] });
+        await load();
+      },
     };
 
     results[mode] = {};

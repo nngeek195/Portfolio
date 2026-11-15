@@ -6,13 +6,14 @@ import { PerspectiveCamera, View } from '@react-three/drei';
 import { getEnvironment } from '../nightVision';
 
 // If a model fails to load or render, keep the flat render (never show an error).
-export class ModelErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+export class ModelErrorBoundary extends Component<{ children: ReactNode; onError?: (error: unknown) => void }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
   }
   componentDidCatch(error: unknown) {
     console.warn('3D view disabled, keeping the flat render:', error);
+    this.props.onError?.(error);
   }
   render() {
     return this.state.failed ? null : this.props.children;

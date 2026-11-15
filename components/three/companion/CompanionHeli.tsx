@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useRef } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { OrthographicCamera, View, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -355,7 +355,16 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
  * (orthographic, 1 unit = 1 CSS px) that flies the model across the whole
  * page, directed by the current section (see ./director.ts).
  */
-export default function CompanionHeli({ onVisible }: { onVisible: (visible: boolean) => void }) {
+export default function CompanionHeli({ onVisible, onFailed }: { onVisible: (visible: boolean) => void; onFailed: () => void }) {
+  // A failed model download (flaky network) is retried once; if it fails again the flat
+  // helicopter takes over (onFailed) rather than leaving the page without one.
+  const [attempt, setAttempt] = useState(0);
+  const onError = useCallback(() => {
+    dbgEvent(`heli model failed (attempt ${attempt + 1})`);
+    useGLTF.clear(URL);
+    if (attempt === 0) window.setTimeout(() => setAttempt(1), 1500);
+    else onFailed();
+  }, [attempt, onFailed]);
   return (
     <View className="pointer-events-none fixed inset-0" index={10}>
       <OrthographicCamera makeDefault position={[0, 0, 1000]} near={1} far={4000} />
@@ -364,7 +373,7 @@ export default function CompanionHeli({ onVisible }: { onVisible: (visible: bool
       <directionalLight position={[-2, 3, 4]} intensity={2.2} />
       <directionalLight position={[3, 1, -3]} intensity={1.6} color="#7cff5b" />
       <Environment />
-      <ModelErrorBoundary>
+      <ModelErrorBoundary key={attempt} onError={onError}>
         <Suspense fallback={null}>
           <Rig onVisible={onVisible} />
         </Suspense>
