@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
 import { dbg, dbgEvent } from '@/lib/debug';
@@ -83,6 +83,8 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
   );
   // Set when the device can't keep up at runtime (see SharedCanvas): back to flat renders.
   const [fellBack, setFellBack] = useState(false);
+  const [fallbackReason, setFallbackReason] = useState('');
+  const fallbackPending = useRef(false);
   const [canvasRequested, setCanvasRequested] = useState(false);
   const [visible, setVisibleSet] = useState<ReadonlySet<string>>(() => new Set());
 
@@ -98,11 +100,30 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
     });
   }, []);
 
-  const onFallback = useCallback(() => {
-    if (isForced()) return;
-    console.info('3D switched off for this visit (device could not keep a smooth frame rate); showing flat renders.');
-    dbgEvent('3D fallback to flat renders');
-    setFellBack(true);
+  // The device can't keep up: switch to the flat renders, but never mid-scroll. The swap
+  // waits until scrolling has stopped for a moment, so no pose snaps while the visitor moves.
+  const onFallback = useCallback((reason = 'frame rate') => {
+    if (isForced()) {
+      dbgEvent(`fallback suppressed by ?3d=on (${reason})`);
+      return;
+    }
+    if (fallbackPending.current) return;
+    fallbackPending.current = true;
+    dbgEvent(`fallback requested (${reason}); waiting for scroll to stop`);
+    let timer = 0;
+    const apply = () => {
+      window.removeEventListener('scroll', arm);
+      console.info('3D switched off for this visit (device could not keep a smooth frame rate); showing flat renders.');
+      dbgEvent('3D fallback applied');
+      setFallbackReason(reason);
+      setFellBack(true);
+    };
+    function arm() {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(apply, 1200);
+    }
+    window.addEventListener('scroll', arm, { passive: true });
+    arm();
   }, []);
   const active3D = enabled && !fellBack;
 
@@ -117,8 +138,8 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
   const onCompanionVisible = useCallback((v: boolean) => setVisible('companion', v), [setVisible]);
 
   useEffect(() => {
-    Object.assign(dbg.three, { enabled: active3D, fellBack, fallbackReason: fellBack ? 'frame rate' : '', canvasMounted: active3D && canvasRequested, companionMounted: active3D && companion, visibleSlots: [...visible] });
-  }, [active3D, fellBack, canvasRequested, companion, visible]);
+    Object.assign(dbg.three, { enabled: active3D, fellBack, fallbackReason, canvasMounted: active3D && canvasRequested, companionMounted: active3D && companion, visibleSlots: [...visible] });
+  }, [active3D, fellBack, fallbackReason, canvasRequested, companion, visible]);
 
   const value = useMemo(() => ({ enabled: active3D, requestCanvas, setVisible }), [active3D, requestCanvas, setVisible]);
 
