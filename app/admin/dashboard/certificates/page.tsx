@@ -5,6 +5,7 @@ import { Award, PlusCircle, Trash2, Upload, Loader2, X, ExternalLink } from 'luc
 import ItemModal from '@/components/ItemModal';
 import { doc, setDoc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { refreshLiveSite } from '@/lib/admin-revalidate';
 
 // Turns plain text into safe, paragraph-wrapped HTML for storage in `description`.
 function escapeHtml(str: string) {
@@ -134,6 +135,7 @@ export default function CertificatesPage() {
         publishedAt: new Date().toISOString(),
       };
       await setDoc(doc(db, 'curated_content', id), docData);
+      refreshLiveSite();
       resetForm();
       fetchCertificates();
     } catch (error) {
@@ -149,6 +151,7 @@ export default function CertificatesPage() {
     setIsDeleting((prev) => ({ ...prev, [id]: true }));
     try {
       await deleteDoc(doc(db, 'curated_content', id));
+      refreshLiveSite();
       setCertificates((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
       alert('Failed to remove certificate.');

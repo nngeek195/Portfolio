@@ -5,6 +5,7 @@ import { Link as LinkIcon, PlusCircle, FolderGit2, CheckCircle, X, Trash2, Globe
 import ItemModal from '@/components/ItemModal';
 import { doc, setDoc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { refreshLiveSite } from '@/lib/admin-revalidate';
 
 interface SearchableOption {
   id: string;
@@ -164,6 +165,7 @@ export default function ImportersPage() {
   const handleUpdateItem = async (updatedItem: any) => {
     try {
       await setDoc(doc(db, 'curated_content', updatedItem.id), updatedItem, { merge: true });
+      refreshLiveSite();
       setSelectedItem(updatedItem); // Update modal UI instantly
       fetchLiveContent(); // Refresh the live list in the background
     } catch (error) {
@@ -287,6 +289,7 @@ export default function ImportersPage() {
     try {
       const docData = { ...mergedData, category: finalCategory, publishedAt: new Date().toISOString(), id: finalId };
       await setDoc(doc(db, 'curated_content', finalId), docData);
+      refreshLiveSite();
       
       setPublishedIds(prev => ({ ...prev, [finalId]: true }));
       fetchLiveContent(); // Refresh live content tab
@@ -311,6 +314,7 @@ export default function ImportersPage() {
     setIsDeleting(prev => ({ ...prev, [id]: true }));
     try {
       await deleteDoc(doc(db, 'curated_content', id));
+      refreshLiveSite();
       
       // Update local states immediately
       setPublishedIds(prev => {
