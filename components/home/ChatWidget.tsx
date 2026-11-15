@@ -223,7 +223,7 @@ export default function ChatWidget() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Transmit a message…"
             autoComplete="off"
-            className="min-w-0 flex-1 bg-transparent py-2 font-mono text-sm text-bone placeholder:text-ash/70 focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent py-2 font-mono text-sm text-bone placeholder:text-ash focus:outline-none"
           />
           <button
             type="submit"

@@ -32,6 +32,6 @@ values and `[...]` entries there.
 | `experience` | Not shown on the site: the Service Record lists only real entries (education + 4 competitions). Add roles there and they appear automatically; optional extras are the education start year (shows "Present") and a `detail` line (role, team, result) for each competition | `SERVICE_RECORD` in `lib/profile.ts` (commented example entry included) |
 | `sidearm-traits` | `lib/profile.ts` (`SIDEARM_TRAITS`) | Suggested trait copy for the pistol parts in the Personnel File — edit to taste |
 | `profile-photo` | `lib/content.ts`, `public/images/placeholders/profile.svg` | Only shown if `settings/profile` in Firestore has no images |
-| `cert-image` | `lib/certificates.ts`, `public/images/placeholders/cert.svg` | Fallback for certificates with no image, or one that fails to load |
-| `finops-cert-image` | `lib/certificates.ts` ("Introduction to FinOps") | The old signed Skilljar URL expired (403); upload the image and set `img` |
+| `cert-image` | `lib/certificates.ts`, `public/images/placeholders/cert.svg` | Fallback when a certificate's image fails to load (a certificate with no image shows its card without an image box) |
+| `finops-cert-image` | `lib/certificates.ts` ("Introduction to FinOps") | The old signed Skilljar URL expired (403); the card shows without an image until you upload one and set `img` |
 | `gun-license-record` | `Model/CREDITS.md` | Purchase details for the rifle and pistol rights (seller, date, licence ID) |

@@ -20,7 +20,7 @@ export default function ArticleGrid({ articles }: { articles: ContentItem[] }) {
 
   return (
     <>
-      <ul data-reveal="stagger" className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <ul data-reveal="stagger" className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         {articles.map((article, i) => {
           const excerpt = article.description ? stripHtml(article.description) : '';
           const date = formatDate(article.publishedAt);
@@ -54,8 +54,8 @@ export default function ArticleGrid({ articles }: { articles: ContentItem[] }) {
                   <span className="scanlines absolute inset-0 opacity-40" aria-hidden="true" />
                 </span>
                 <span className="flex flex-1 flex-col p-5">
-                  <span className="line-clamp-3 font-display text-2xl font-bold uppercase leading-tight tracking-wide text-bone">{title}</span>
-                  {excerpt && <span className="mt-2 line-clamp-3 text-sm text-ash">{excerpt}</span>}
+                  <span className="line-clamp-3 font-display text-2xl font-bold uppercase leading-tight tracking-wide text-bone [overflow-wrap:anywhere]">{title}</span>
+                  {excerpt && <span className="mt-2 line-clamp-3 text-sm text-ash [overflow-wrap:anywhere]">{excerpt}</span>}
                   <span className="mt-auto flex items-center gap-2 pt-5 font-mono text-xs uppercase tracking-[0.2em] text-bone group-hover:text-nv">
                     Read report <ArrowRight size={14} aria-hidden="true" />
                   </span>

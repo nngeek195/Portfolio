@@ -82,8 +82,8 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* NVG status readout (switches ON -> OFF as the goggles flip up) */}
-      <p aria-hidden="true" className="absolute bottom-[88px] left-1/2 hidden -translate-x-1/2 font-mono text-[11px] uppercase tracking-[0.3em] text-nv lg:block">
+      {/* NVG status readout (switches ON -> OFF as the goggles flip up). xl+ only: narrower, it runs into the hero buttons */}
+      <p aria-hidden="true" className="absolute bottom-[88px] left-1/2 hidden -translate-x-1/2 font-mono text-[11px] uppercase tracking-[0.3em] text-nv xl:block">
         NVG: <span data-hero="nvg">ON</span>
         <span className="ml-4 text-ash">Scroll to insert</span>
       </p>

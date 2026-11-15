@@ -35,7 +35,7 @@ export default function SiteFooter() {
         </div>
 
         <div className="max-w-xl text-xs text-ash md:text-right">
-          <p className="font-mono uppercase tracking-[0.2em] text-ash/80">3D asset credits</p>
+          <p className="font-mono uppercase tracking-[0.2em] text-ash">3D asset credits</p>
           <ul className="mt-3 space-y-2">
             {MODELS.map((m) => (
               <li key={m.id}>
@@ -61,7 +61,8 @@ export default function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-steel/50">
-        <p className="mx-auto max-w-7xl px-5 py-4 font-mono text-[11px] uppercase tracking-[0.2em] text-ash/70 md:px-8">
+        {/* Right padding keeps the line clear of the fixed chat button (bottom right) until the page is wide enough. */}
+        <p className="mx-auto max-w-7xl py-4 pl-5 pr-24 font-mono text-[11px] uppercase tracking-[0.2em] text-ash md:pl-8 2xl:pr-8">
           © {year} {PROFILE.name}. Fan-inspired tactical theme; not affiliated with any game publisher.
         </p>
       </div>

@@ -13,7 +13,8 @@ export type Certificate = {
   mediaUrls: string[];
 };
 
-// Fallback image when a certificate has none, or its image fails to load.
+// Fallback image when a certificate's image fails to load (a certificate with no
+// image at all shows its card without an image box).
 // PLACEHOLDER: cert-image — generic stand-in, not a real certificate.
 export const CERT_PLACEHOLDER = '/images/placeholders/cert.svg';
 
@@ -35,8 +36,9 @@ const raw: RawCertificate[] = [
     issuer: 'FinOps Foundation',
     issued: 'Dec 2025',
     // PLACEHOLDER: finops-cert-image — the previous image was a signed Skilljar URL
-    // that expired (now returns 403). Upload the certificate image (e.g. to the
-    // Portfilio repo or Cloudinary) and set `img` here.
+    // that expired (now returns 403). Until a real image is set the card shows
+    // without one. Upload the certificate image (e.g. to the Portfilio repo or
+    // Cloudinary) and set `img` here.
     link: 'https://verify.skilljar.com/c/pdbdz4ebiabb',
   },
   {

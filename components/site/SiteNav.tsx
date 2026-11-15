@@ -85,7 +85,7 @@ export default function SiteNav() {
                   className={`group relative block whitespace-nowrap px-2.5 py-1.5 transition-colors xl:px-3 hover:text-bone ${isActive(link) ? 'text-nv' : 'text-ash'}`}
                 >
                   <span className="block font-mono text-xs font-semibold uppercase tracking-[0.18em]">{link.label}</span>
-                  <span className="block text-[11px] text-ash/70 group-hover:text-ash">{link.plain}</span>
+                  <span className="block text-[11px] text-ash group-hover:text-bone">{link.plain}</span>
                   <span
                     aria-hidden="true"
                     className={`absolute inset-x-2.5 -bottom-[13px] h-0.5 xl:inset-x-3 bg-nv transition-transform duration-300 motion-reduce:transition-none ${isActive(link) ? 'scale-x-100' : 'scale-x-0'}`}

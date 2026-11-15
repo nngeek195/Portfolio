@@ -18,7 +18,7 @@
   --color-nv: #7cff5b;        /* night-vision accent, HUD active */
   --color-olive: #4a5233;     /* muted military tint */
   --color-amber: #ffb020;     /* warnings, placeholders */
-  --color-signal: #e0362c;    /* REC, critical, stamps */
+  --color-signal: #f24b40;    /* REC, critical, stamps (5.4:1 on void, 4.7:1 on gunmetal) [#e0362c: 4.4:1] */
   --color-blueprint: #5fa8d3; /* Loadout schematic only */
 
   --font-display: var(--font-display-face), "Arial Narrow", sans-serif;

@@ -84,6 +84,7 @@ function CertImage({ src, alt }: { src: string; alt: string }) {
 function CommendationCard({ cert, index }: { cert: CertificateCard; index: number }) {
   const url = cert.credentialUrl || cert.link || null;
   const r = ribbon(cert);
+  const image = cert.mediaUrls?.find((u) => u.trim()) ?? null;
   const body = (
     <>
       <div className="flex h-2" aria-hidden="true">
@@ -95,9 +96,13 @@ function CommendationCard({ cert, index }: { cert: CertificateCard; index: numbe
         <span>CMD-{String(index + 1).padStart(3, '0')}</span>
         <span className="hidden sm:inline">{r.label}</span>
       </div>
-      <div className="relative mx-3 mt-3 h-24 bg-bone/[0.06] p-2 sm:mx-4 sm:h-36">
-        <CertImage src={cert.mediaUrls?.[0] || CERT_PLACEHOLDER} alt={`${cert.title} certificate`} />
-      </div>
+      {/* No real image on file (e.g. FinOps, whose old signed URL expired): no image box at all,
+          rather than a generic stand-in that looks like a certificate. */}
+      {image && (
+        <div className="relative mx-3 mt-3 h-24 bg-bone/[0.06] p-2 sm:mx-4 sm:h-36">
+          <CertImage src={image} alt={`${cert.title} certificate`} />
+        </div>
+      )}
       <div className="flex flex-1 flex-col p-3 sm:p-4">
         <h3 className="font-display text-base font-bold uppercase leading-tight tracking-wide text-bone sm:text-xl">{cert.title}</h3>
         <p className="mt-1 text-xs text-ash sm:text-sm">{cert.issuer || 'Certification'}</p>
