@@ -20,8 +20,7 @@ export const PROFILE = {
   // Sabaragamuwa University, Belihuloya.
   location: { label: 'Belihuloya, Sri Lanka', coords: '06°42′N 080°47′E', utcOffset: 'UTC+05:30' },
 
-  // PLACEHOLDER: contact-email — set to your address to enable the email channel.
-  email: null as string | null,
+  email: 'niranganayanajith195@gmail.com' as string | null,
 
   socials: {
     linkedin: 'https://www.linkedin.com/in/niranga-nayanajith-548a0a302',

@@ -24,7 +24,6 @@ values and `[...]` entries there.
 | `callsign` | Nav, Hero ("Operation // …"), Personnel File | `PROFILE.callsign` in `lib/profile.ts` (later also the helicopter tail number) |
 | `hero-art` | Hero, right-hand frame (currently a generic operator silhouette) | Send operator art: layered PNG/WebP, about 2560px wide |
 | `experience` | Service Record: the `[ROLE / INTERNSHIP]` entry, `[Role, team and result]` lines, `[START YEAR]` | `SERVICE_RECORD` in `lib/profile.ts` |
-| `contact-email` | Comms, channel CH-03 (disabled until set) | `PROFILE.email` in `lib/profile.ts` |
 | `featured-projects` | Operations ("Showing latest 6 — no featured flag yet") | Decide which projects to feature; needs a `featured` flag in the admin |
 
 ## In code only (not marked on the page)

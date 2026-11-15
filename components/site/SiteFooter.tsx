@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { Mail } from 'lucide-react';
 import { MODELS } from '@/lib/models';
 import { PROFILE } from '@/lib/profile';
 
@@ -23,6 +24,13 @@ export default function SiteFooter() {
                 <Image src="/icons/social/github.svg" alt="" width={20} height={20} className="rounded-full bg-bone" />
               </a>
             </li>
+            {PROFILE.email && (
+              <li>
+                <a href={`mailto:${PROFILE.email}`} aria-label={`Email ${PROFILE.email}`} className="clip-corner-sm grid h-10 w-10 place-items-center bg-gunmetal text-bone ring-1 ring-inset ring-steel hover:ring-ash">
+                  <Mail size={18} aria-hidden="true" />
+                </a>
+              </li>
+            )}
           </ul>
         </div>
 
