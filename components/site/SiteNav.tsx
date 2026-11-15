@@ -7,6 +7,7 @@ import { Menu, X } from 'lucide-react';
 import { PROFILE } from '@/lib/profile';
 import Placeholder from '@/components/ui/Placeholder';
 import { useActiveObjective } from '@/lib/motion/scroll-store';
+import SystemToggles from './SystemToggles';
 
 // Themed label first, plain label underneath, so nobody has to decode it.
 export const NAV_LINKS = [
@@ -62,7 +63,7 @@ export default function SiteNav() {
         hidden ? '-translate-y-full' : 'translate-y-0'
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-5 md:px-8">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 md:px-8 xl:gap-6">
         <Link href="/" className="group flex items-center gap-3" aria-label={`${PROFILE.name} — home`}>
           <span className="clip-corner-sm grid h-9 w-9 place-items-center bg-bone font-stencil text-lg font-bold text-void">NN</span>
           <span className="leading-tight">
@@ -81,19 +82,21 @@ export default function SiteNav() {
                 <Link
                   href={link.href}
                   aria-current={current(link)}
-                  className={`group relative block px-3 py-1.5 transition-colors hover:text-bone ${isActive(link) ? 'text-nv' : 'text-ash'}`}
+                  className={`group relative block whitespace-nowrap px-2.5 py-1.5 transition-colors xl:px-3 hover:text-bone ${isActive(link) ? 'text-nv' : 'text-ash'}`}
                 >
                   <span className="block font-mono text-xs font-semibold uppercase tracking-[0.18em]">{link.label}</span>
                   <span className="block text-[11px] text-ash/70 group-hover:text-ash">{link.plain}</span>
                   <span
                     aria-hidden="true"
-                    className={`absolute inset-x-3 -bottom-[13px] h-0.5 bg-nv transition-transform duration-300 motion-reduce:transition-none ${isActive(link) ? 'scale-x-100' : 'scale-x-0'}`}
+                    className={`absolute inset-x-2.5 -bottom-[13px] h-0.5 xl:inset-x-3 bg-nv transition-transform duration-300 motion-reduce:transition-none ${isActive(link) ? 'scale-x-100' : 'scale-x-0'}`}
                   />
                 </Link>
               </li>
             ))}
           </ul>
         </nav>
+
+        <SystemToggles variant="nav" className="hidden lg:flex" />
 
         <button
           type="button"
@@ -129,6 +132,7 @@ export default function SiteNav() {
               </li>
             ))}
           </ul>
+          <SystemToggles variant="menu" className="border-t border-steel/50 px-5 pb-4 pt-3" />
         </nav>
       </div>
     </header>

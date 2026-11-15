@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
 import { registerScene } from '@/lib/motion/scene-progress';
+import { playCue } from '@/lib/audio/cues';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -15,6 +16,9 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * module row, schematic marker and skill panel follow the active index, and a
  * blueprint scan line sweeps the rifle. Registers its trigger so the 3D rifle reads
  * the same progress from the scroll position (lib/motion/scene-progress).
+ * With sound on, a mechanical clack plays as each module locks into place
+ * (scrolling forward: module i is fully assembled once progress * count >= i + 1,
+ * the same moment the 3D rifle seats it).
  */
 export default function LoadoutScene({ count }: { count: number }) {
   useGSAP(() => {
@@ -42,6 +46,10 @@ export default function LoadoutScene({ count }: { count: number }) {
       };
       activate(0);
 
+      // Modules locked so far; a refresh only re-syncs it (no sound for jumps or layout changes).
+      let locked = 0;
+      const lockedAt = (progress: number) => Math.min(count, Math.floor(progress * count + 1e-6));
+
       const st = ScrollTrigger.create({
         trigger: stage,
         start: 'top top+=88',
@@ -51,10 +59,16 @@ export default function LoadoutScene({ count }: { count: number }) {
         invalidateOnRefresh: true,
         animation: scan ? gsap.fromTo(scan, { left: '2%' }, { left: '98%', ease: 'none' }) : undefined,
         // Also on refresh (resize, late layout): the active module must match the scroll position.
-        onRefresh: (self) => activate(Math.min(count - 1, Math.floor(self.progress * count))),
+        onRefresh: (self) => {
+          activate(Math.min(count - 1, Math.floor(self.progress * count)));
+          locked = lockedAt(self.progress);
+        },
         onUpdate: (self) => {
           const index = Math.min(count - 1, Math.floor(self.progress * count));
           activate(index);
+          const now = lockedAt(self.progress);
+          if (now > locked && self.direction > 0) playCue('clack');
+          locked = now;
         },
       });
       const unregister = registerScene('loadout', st);

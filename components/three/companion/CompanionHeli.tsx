@@ -8,8 +8,6 @@ import { model } from '@/lib/models';
 import { PROFILE } from '@/lib/profile';
 import { HELI_LIVE_ATTR } from '@/lib/motion/heli';
 import { dbg, dbgEvent } from '@/lib/debug';
-import { getAudioContext, useSoundOn } from '@/lib/audio/sound';
-import type { RotorAudio } from '@/lib/audio/rotor';
 import { prepareModel, applyNightVision, setEdge, type NightVisionUniforms } from '../nightVision';
 import { Environment, ModelErrorBoundary, NightLights } from '../views/ModelView';
 import { LOOK } from '../look';
@@ -165,25 +163,6 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
     [onVisible]
   );
 
-  // Rotor sound, only once the visitor has turned sound on (the synth module loads then).
-  const soundOn = useSoundOn();
-  const audio = useRef<RotorAudio | null>(null);
-  useEffect(() => {
-    if (!soundOn) return;
-    let cancelled = false;
-    let a: RotorAudio | null = null;
-    import('@/lib/audio/rotor').then(({ createRotorAudio }) => {
-      const ctx = getAudioContext();
-      if (cancelled || !ctx) return;
-      a = audio.current = createRotorAudio(ctx);
-    });
-    return () => {
-      cancelled = true;
-      a?.dispose();
-      audio.current = null;
-    };
-  }, [soundOn]);
-
   const visible = useRef(false);
   const s = useRef<RigState>({
     x: 0, y: 0, size: 100, yaw: 0, pitch: 0, roll: 0, topDown: 0, light: 0, lx: 0, ly: 0, dust: 0, shadow: 0, rotor: 1, nv: 0.85, bright: 1,
@@ -332,11 +311,11 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
       onVisible(want);
     }
 
-    // Rotor chop: louder when the helicopter is bigger (closer) and on screen; silent once frames stop.
+    // For the rotor chop (components/site/AudioDirector): on screen, and how fast the rotor turns.
     const offBy = Math.max(0, -r.x, r.x - W, -r.y, r.y - H);
     const presence = want ? clamp(1 - offBy / 450, 0, 1) : 0;
-    audio.current?.update(clamp(r.size / 420, 0.1, 1) * presence * r.bright, clamp((r.rotorSpeed - 6) / 42, 0, 1));
-    Object.assign(lastHeli, { valid: true, x: r.x, y: r.y, size: r.size, yaw: r.yaw, pitch: r.pitch, bright: r.bright });
+    const rotor = clamp((r.rotorSpeed - 6) / 42, 0, 1);
+    Object.assign(lastHeli, { valid: true, x: r.x, y: r.y, size: r.size, yaw: r.yaw, pitch: r.pitch, bright: r.bright, presence, rotor, at: performance.now() });
     Object.assign(dbg.heli, {
       owner: director.owner, x: r.x, y: r.y, size: r.size, bright: r.bright, nv: r.nv, targetX: pose.x, targetY: pose.y,
       onScreen, want, finite: [r.x, r.y, r.size, r.yaw, r.pitch, r.roll].every(Number.isFinite), lastFrameAt: performance.now(), frameScrollY: sy,

@@ -24,7 +24,7 @@ export default function FlatCompanion({ onReady }: { onReady?: () => void }) {
     const el = img.current;
     if (!el) return;
     const director = createDirector();
-    const s = lastHeli.valid ? { ...lastHeli } : null;
+    const s = lastHeli.valid ? { x: lastHeli.x, y: lastHeli.y, size: lastHeli.size, yaw: lastHeli.yaw, pitch: lastHeli.pitch, bright: lastHeli.bright, valid: true } : null;
     const release = holdLive('flat'); // the stills stay hidden: this one carries on instead
     let raf = 0;
     let readySent = false;
@@ -45,7 +45,8 @@ export default function FlatCompanion({ onReady }: { onReady?: () => void }) {
       c.yaw = damp(Math.abs(c.yaw), yawT, 3.2, dt);
       c.pitch = damp(c.pitch, pose.pitch ?? 0, 5, dt);
       c.bright = damp(c.bright, pose.bright ?? 1, 3, dt);
-      Object.assign(lastHeli, c);
+      const offBy = Math.max(0, -c.x, c.x - W, -c.y, c.y - window.innerHeight);
+      Object.assign(lastHeli, c, { presence: Math.max(0, Math.min(1, 1 - offBy / 450)), rotor: 0.5, at: now });
       // Facing: scaleX squeezes through 0 while turning (reads as a turn); pitch rotates the nose.
       const face = Math.cos(c.yaw);
       const h = c.size * ASPECT;
