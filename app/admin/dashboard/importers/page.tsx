@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Link as LinkIcon, PlusCircle, FolderGit2, CheckCircle, X, Trash2, Globe, Upload, Loader2, RefreshCw, AlertTriangle, ChevronDown, Search, Check } from 'lucide-react';
+import { Link as LinkIcon, PlusCircle, FolderGit2, CheckCircle, X, Trash2, Globe, Upload, Loader2, RefreshCw, AlertTriangle, ChevronDown, Search, Check, Star } from 'lucide-react';
 import ItemModal from '@/components/ItemModal';
 import { doc, setDoc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -307,6 +307,19 @@ export default function ImportersPage() {
     }
   };
 
+  // --- FEATURED (Operations section on the home page) ---
+  // Adds/updates only the optional `featured` / `featuredOrder` fields (merge),
+  // leaving every other field of the document untouched.
+  const handleFeatureUpdate = async (id: string, changes: { featured?: boolean; featuredOrder?: number | null }) => {
+    try {
+      await setDoc(doc(db, 'curated_content', id), changes, { merge: true });
+      refreshLiveSite();
+      setLiveContent(prev => prev.map(item => (item.id === id ? { ...item, ...changes } : item)));
+    } catch (error) {
+      alert('Failed to update featured setting.');
+    }
+  };
+
   // --- DELETE LOGIC ---
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to remove this item from your live portfolio?')) return;
@@ -542,6 +555,32 @@ export default function ImportersPage() {
                     <h3 className="text-lg font-bold text-slate-200">{item.title || item.repoName}</h3>
                     <p className="text-sm text-slate-400 line-clamp-1">{item.description}</p>
                   </div>
+
+                  {item.category === 'project' && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleFeatureUpdate(item.id, { featured: !item.featured })}
+                        title="Show this project in the Operations section on the home page"
+                        className={`flex items-center gap-2 font-bold px-4 py-2 rounded border transition-all ${item.featured ? 'bg-amber-950/40 text-amber-400 border-amber-800 hover:bg-amber-900/40' : 'bg-gray-900 text-slate-400 border-gray-700 hover:text-amber-400 hover:border-amber-800'}`}
+                      >
+                        <Star size={18} fill={item.featured ? 'currentColor' : 'none'} /> {item.featured ? 'Featured' : 'Feature'}
+                      </button>
+                      {item.featured && (
+                        <input
+                          type="number"
+                          min={1}
+                          defaultValue={item.featuredOrder ?? ''}
+                          placeholder="#"
+                          title="Order in the Operations section (1 = first). Leave empty to sort by date."
+                          onBlur={(e) => {
+                            const value = e.target.value === '' ? null : Number(e.target.value);
+                            if (value !== (item.featuredOrder ?? null)) handleFeatureUpdate(item.id, { featuredOrder: value });
+                          }}
+                          className="w-16 bg-black text-white border border-gray-700 rounded p-2 text-center outline-none focus:border-amber-500"
+                        />
+                      )}
+                    </div>
+                  )}
                   
                   <button 
                     onClick={() => handleDelete(item.id)}

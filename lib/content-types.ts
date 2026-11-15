@@ -18,5 +18,8 @@ export type ContentItem = {
   dateIssued?: string;
   credentialUrl?: string | null;
   link?: string | null;
+  // Projects: shown in the home page Operations section (set in Admin > Importers > Manage Live Content).
+  featured?: boolean;
+  featuredOrder?: number | null;
   [key: string]: unknown;
 };
