@@ -1,16 +1,18 @@
 import Image from 'next/image';
-import { Mail } from 'lucide-react';
+import { Mail, Send } from 'lucide-react';
 import { PROFILE } from '@/lib/profile';
 import { model } from '@/lib/models';
 import Placeholder from '@/components/ui/Placeholder';
 import SectionHeader from '@/components/ui/SectionHeader';
 import OpenCommsHandler from './OpenCommsHandler';
-import ModelSlot from '@/components/three/ModelSlot';
+import ExtractionEta from './ExtractionEta';
 
 const channelClass =
   'clip-corner group grid grid-cols-[4.5rem_1fr_auto] items-center gap-4 bg-gunmetal px-5 py-4 ring-1 ring-inset ring-steel transition-colors hover:ring-ash';
 
-// OBJ-07 Comms (Contact). Phase 4: the helicopter descends and hovers in 3D.
+// OBJ-07 Comms (Contact). Exfil: on capable desktops the live 3D helicopter
+// (components/three/companion) lands in the extraction panel, its searchlight
+// locks onto TRANSMIT, and hovering a channel makes it dip towards it.
 export default function Comms() {
   const heli = model('heli').poster;
   return (
@@ -21,7 +23,7 @@ export default function Comms() {
 
           <ul data-reveal="stagger" className="grid gap-3">
             <li>
-              <a href={PROFILE.socials.linkedin} target="_blank" rel="noreferrer" className={channelClass}>
+              <a href={PROFILE.socials.linkedin} target="_blank" rel="noreferrer" data-channel className={channelClass}>
                 <span className="font-mono text-xs text-nv">CH-01</span>
                 <span>
                   <span className="block font-display text-2xl font-bold uppercase tracking-wide text-bone">LinkedIn</span>
@@ -31,7 +33,7 @@ export default function Comms() {
               </a>
             </li>
             <li>
-              <a href={PROFILE.socials.github} target="_blank" rel="noreferrer" className={channelClass}>
+              <a href={PROFILE.socials.github} target="_blank" rel="noreferrer" data-channel className={channelClass}>
                 <span className="font-mono text-xs text-nv">CH-02</span>
                 <span>
                   <span className="block font-display text-2xl font-bold uppercase tracking-wide text-bone">GitHub</span>
@@ -42,7 +44,7 @@ export default function Comms() {
             </li>
             <li>
               {PROFILE.email ? (
-                <a href={`mailto:${PROFILE.email}`} className={channelClass}>
+                <a href={`mailto:${PROFILE.email}`} data-channel className={channelClass}>
                   <span className="font-mono text-xs text-nv">CH-03</span>
                   <span>
                     <span className="block font-display text-2xl font-bold uppercase tracking-wide text-bone">Email</span>
@@ -51,7 +53,7 @@ export default function Comms() {
                   <Mail size={26} className="text-bone" aria-hidden="true" />
                 </a>
               ) : (
-                <div className={`${channelClass} hover:ring-steel`}>
+                <div data-channel className={`${channelClass} hover:ring-steel`}>
                   <span className="font-mono text-xs text-ash">CH-03</span>
                   <span>
                     <span className="block font-display text-2xl font-bold uppercase tracking-wide text-ash">Email</span>
@@ -65,10 +67,22 @@ export default function Comms() {
               <OpenCommsHandler className={`${channelClass} w-full text-left`} />
             </li>
           </ul>
+
+          {/* Primary call to action; the extraction helicopter's searchlight locks onto it */}
+          <div data-reveal="up" className="mt-8">
+            <a
+              href={PROFILE.email ? `mailto:${PROFILE.email}` : PROFILE.socials.linkedin}
+              {...(PROFILE.email ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
+              data-comms="transmit"
+              className="transmit-btn clip-corner bracket-hover inline-flex items-center justify-center gap-3 bg-nv px-10 py-4 font-mono text-sm font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-bone"
+            >
+              <Send size={16} aria-hidden="true" /> Transmit
+            </a>
+          </div>
         </div>
 
         {/* Extraction */}
-        <div data-reveal="mask" className="hud-corners relative min-h-[420px] overflow-hidden bg-[#06110a] [--hud-c:rgb(124_255_91/0.6)]" aria-hidden="true">
+        <div data-reveal="mask" data-comms="lz" className="hud-corners relative min-h-[420px] overflow-hidden bg-[#06110a] [--hud-c:rgb(124_255_91/0.6)]" aria-hidden="true">
           <div
             className="absolute inset-0"
             style={{
@@ -78,21 +92,21 @@ export default function Comms() {
               backgroundPosition: 'center, center, 0 58%, 50% 0',
             }}
           />
-          {/* 3D helicopter descends and hovers here (Phase 4); the silhouette is the fallback */}
-          <ModelSlot kind="heli-comms" className="absolute inset-0">
-            <Image
-              src={heli.src}
-              width={heli.width}
-              height={heli.height}
-              alt=""
-              sizes="(min-width: 1024px) 560px, 90vw"
-              className="absolute left-1/2 top-[44%] w-[86%] -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_0_2px_rgb(124_255_91/0.8)]"
-            />
-          </ModelSlot>
+          {/* Flat helicopter; on capable desktops the live 3D one lands here instead (this fades out) */}
+          <Image
+            src={heli.src}
+            width={heli.width}
+            height={heli.height}
+            alt=""
+            sizes="(min-width: 1024px) 560px, 90vw"
+            data-heli-still
+            className="absolute left-1/2 top-[44%] w-[86%] -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_0_2px_rgb(124_255_91/0.8)]"
+          />
+          {/* Landing pad */}
+          <div className="absolute bottom-[14%] left-1/2 h-6 w-[46%] -translate-x-1/2 rounded-[50%] border border-dashed border-nv/40" />
           <div className="scanlines absolute inset-0 opacity-50" />
           <div className="absolute inset-x-5 top-5 flex justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-nv">
-            <span>Extraction inbound</span>
-            <span>ETA 00:30</span>
+            <ExtractionEta />
           </div>
           <div className="absolute inset-x-5 bottom-5 flex justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-nv/80">
             <span>LZ {PROFILE.location.coords}</span>

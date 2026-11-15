@@ -245,6 +245,14 @@ body {
 html[data-heli-live] [data-heli-still] {
   opacity: 0 !important;
 }
+/* Comms: the helicopter's searchlight has locked onto TRANSMIT. */
+.transmit-btn[data-locked] {
+  box-shadow: 0 0 0 1px rgb(124 255 91 / 0.9), 0 0 28px rgb(124 255 91 / 0.55);
+  animation: transmit-lock 1.4s ease-in-out infinite;
+}
+@keyframes transmit-lock {
+  50% { box-shadow: 0 0 0 1px rgb(124 255 91 / 0.5), 0 0 14px rgb(124 255 91 / 0.25); }
+}
 /* Operations tactical map: route + landing-zone markers only while the 3D helicopter flies. */
 .ops-route,
 .lz-mark {
