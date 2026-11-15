@@ -15,7 +15,7 @@ export default function Hero() {
       {/* Sky + glow */}
       <div data-hero="sky" className="nv-sky absolute inset-0 -z-30" aria-hidden="true" />
       {/* Goggles flipped up: desaturated grade faded in by HeroScene */}
-      <div data-hero="nvoff" className="pointer-events-none absolute inset-0 -z-20 bg-[linear-gradient(to_bottom,#141617,#0b0c0d_55%,#07080a)] opacity-0" aria-hidden="true" />
+      <div data-hero="nvoff" className="pointer-events-none absolute inset-0 -z-20 bg-[linear-gradient(to_bottom,#141617,#0b0c0d_55%,#0c0e11)] opacity-0" aria-hidden="true" />
       {/* Night-vision power-on flash (CSS, once, on load; off with reduced motion) */}
       <div className="nv-flash pointer-events-none absolute inset-0 z-10 bg-nv mix-blend-screen" aria-hidden="true" />
 

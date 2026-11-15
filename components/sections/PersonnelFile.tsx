@@ -103,7 +103,7 @@ export default function PersonnelFile({ profileImages, intervalSeconds }: { prof
           </article>
 
           {/* Sidearm */}
-          <aside data-reveal="up" aria-labelledby="sidearm-title" className="clip-corner bg-[#0b0f13] p-6 ring-1 ring-inset ring-steel md:p-8 lg:col-span-5">
+          <aside data-reveal="up" aria-labelledby="sidearm-title" className="clip-corner bg-[#12171c] p-6 ring-1 ring-inset ring-steel md:p-8 lg:col-span-5">
             <div className="flex items-center justify-between border-b border-dashed border-steel pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-ash">
               <span id="sidearm-title">Personal sidearm</span>
               <span>Traits</span>
