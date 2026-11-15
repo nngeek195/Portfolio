@@ -13,6 +13,7 @@ import type { RotorAudio } from '@/lib/audio/rotor';
 import { prepareModel, applyNightVision, type NightVisionUniforms } from '../nightVision';
 import { Environment, ModelErrorBoundary } from '../views/ModelView';
 import { createDirector, type Director } from './director';
+import { lastHeli } from './handoff';
 import { makeCrew, makeParticles, makeRotorDisc, makeSearchlight, makeShadow, makeShimmer, makeStrobe, makeTailNumber } from './effects';
 
 const URL = model('heli').url;
@@ -331,6 +332,7 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
     const offBy = Math.max(0, -r.x, r.x - W, -r.y, r.y - H);
     const presence = want ? clamp(1 - offBy / 450, 0, 1) : 0;
     audio.current?.update(clamp(r.size / 420, 0.1, 1) * presence * r.bright, clamp((r.rotorSpeed - 6) / 42, 0, 1));
+    Object.assign(lastHeli, { valid: true, x: r.x, y: r.y, size: r.size, yaw: r.yaw, pitch: r.pitch, bright: r.bright });
     Object.assign(dbg.heli, {
       owner: director.owner, x: r.x, y: r.y, size: r.size, bright: r.bright, nv: r.nv, targetX: pose.x, targetY: pose.y,
       onScreen, want, finite: [r.x, r.y, r.size, r.yaw, r.pitch, r.roll].every(Number.isFinite), lastFrameAt: performance.now(), frameScrollY: sy,

@@ -106,19 +106,26 @@ const SAMPLER = `(() => {
         if (settled) { S.heliMissingSettled++; note('heli', reason, { section: sectionAt(), x: Math.round(h.x), hy: Math.round(h.y), owner: h.owner }); }
       }
     }
-    // ---- rifle
+    // ---- rifle: expected progress is derived here from the scroll position and the scene trigger's
+    // start/end (independent of the app), then compared with what the rifle last applied; the rifle's
+    // own maxPartErr checks that the parts really sit where that applied value puts them.
     const slot = document.querySelector('#skills [data-model-slot="rifle"]');
     const r = slot && slot.getBoundingClientRect();
     const onScreen = r && r.width > 0 && r.bottom > 0 && r.top < innerHeight;
-    if (onScreen && d.rifle.loaded && d.triggers.loadout) {
+    const t = d.triggers.loadout;
+    if (onScreen && d.rifle.loaded && t) {
       S.rifleChecked++;
-      const stale = Math.abs(d.rifle.frameScrollY - scrollY) > 2 && now - d.rifle.lastFrameAt > 250;
+      const expected = Math.min(1, Math.max(0, (scrollY - t.start) / Math.max(1, t.end - t.start)));
+      const fresh = Math.abs(d.rifle.frameScrollY - scrollY) <= 2;
+      const stale = !fresh && now - d.rifle.lastFrameAt > 250;
+      const progErr = fresh ? Math.abs(d.rifle.applied - expected) : 0;
       const err = d.rifle.maxPartErr;
       S.maxRifleErr = Math.max(S.maxRifleErr, err);
+      S.maxProgErr = Math.max(S.maxProgErr || 0, progErr);
       if (stale) S.rifleStale++;
-      if (err > 0.015 || stale) {
+      if (err > 0.015 || progErr > 0.02 || stale) {
         S.rifleBad++;
-        if (settled) { S.rifleBadSettled++; note('rifle', stale ? 'not re-rendering' : 'parts off pose', { err: +err.toFixed(3), applied: +d.rifle.applied.toFixed(3), expected: +d.rifle.expected.toFixed(3) }); }
+        if (settled) { S.rifleBadSettled++; note('rifle', stale ? 'not re-rendering' : progErr > 0.02 ? 'progress off scroll' : 'parts off pose', { err: +err.toFixed(3), applied: +d.rifle.applied.toFixed(3), expected: +expected.toFixed(3) }); }
       }
     }
   }
@@ -150,7 +157,7 @@ async function main() {
     const tops = () => ev(`[...document.querySelectorAll('main section[id]')].map(s => [s.id, Math.round(s.getBoundingClientRect().top + scrollY)])`);
     const jump = (y) => ev(`window.scrollTo(0, ${y})`);
     const trig = (name, f) => ev(`(() => { const t = __dbg.triggers.${name}; return t ? Math.round(t.start + (t.end - t.start) * ${f}) : null })()`);
-    const snap = async () => ev(`(() => { const s = JSON.parse(JSON.stringify(window.__stress)); Object.assign(window.__stress, { frames: 0, heliShould: 0, heliMissing: 0, heliMissingSettled: 0, rifleChecked: 0, rifleBad: 0, rifleBadSettled: 0, rifleStale: 0, maxRifleErr: 0, reasons: {}, examples: [] }); return s; })()`);
+    const snap = async () => ev(`(() => { const s = JSON.parse(JSON.stringify(window.__stress)); Object.assign(window.__stress, { frames: 0, heliShould: 0, heliMissing: 0, heliMissingSettled: 0, rifleChecked: 0, rifleBad: 0, rifleBadSettled: 0, rifleStale: 0, maxRifleErr: 0, maxProgErr: 0, reasons: {}, examples: [] }); return s; })()`);
 
     const scenarios = {
       async flicks() {
@@ -188,24 +195,16 @@ async function main() {
         }
       },
       async reload() {
-        for (const [name, f] of [['loadout', 0.5], ['loadout', 0.05], ['dossier', 0.4]]) {
+        // Reload, then jump mid-scene ~1 s later, before the models have loaded (a plain reload or
+        // a deep link lands at the top: the browser's scroll restoration is overridden).
+        for (const [name, f] of [['loadout', 0.5], ['loadout', 1.05], ['dossier', 0.4], ['loadout', 0.15]]) {
           const y = await trig(name, f);
-          if (y == null) continue;
-          await jump(y);
-          await sleep(800);
           await send('Page.reload');
-          await sleep(7500);
+          await sleep(1200);
           await ev(SAMPLER);
-          await sleep(1500);
-        }
-        const t = await tops();
-        for (const id of ['operations', 'contact']) {
-          const top = t.find(([s]) => s === id)?.[1];
-          await jump(top + 200);
-          await sleep(800);
-          await send('Page.reload');
-          await sleep(7500);
-          await ev(SAMPLER);
+          if (y != null) await jump(y);
+          await sleep(9000);
+          for (let j = 0; j < 3; j++) { await wheel(-200); await sleep(25); }
           await sleep(1500);
         }
       },
@@ -241,6 +240,20 @@ async function main() {
           await sleep(1300);
         }
       },
+      async fallback() {
+        // Force the frame-rate fallback mid-scroll (debug hook) and keep scrolling: the swap must
+        // wait for the scroll to stop and the helicopter must carry on (flat) without vanishing.
+        if (mode === 'forced') return console.log('  (fallback scenario skipped: ?3d=on suppresses fallback)');
+        const y = await trig('loadout', 0.3);
+        await jump(y);
+        await sleep(1500);
+        await ev('__dbg.hooks.fallback && __dbg.hooks.fallback("stress test")');
+        for (let i = 0; i < 30; i++) { await wheel(i < 15 ? 260 : -260); await sleep(60); }
+        await sleep(2500);
+        const m = await maxY();
+        for (let i = 0; i < 10; i++) { await jump(Math.round(Math.random() * m)); await sleep(1300); }
+        console.log('  (after fallback: ' + JSON.stringify(await ev('({ fellBack: __dbg.three.fellBack, owner: __dbg.heli.owner })')) + ')');
+      },
     };
 
     results[mode] = {};
@@ -253,7 +266,7 @@ async function main() {
       const pct = (a, b) => (b ? ((100 * a) / b).toFixed(1) + '%' : '-');
       results[mode][name] = s;
       console.log(
-        `  ${name.padEnd(10)} ${((Date.now() - t0) / 1000).toFixed(0).padStart(3)}s  heli missing ${String(s.heliMissing).padStart(5)}/${String(s.heliShould).padEnd(5)} (${pct(s.heliMissing, s.heliShould).padStart(6)})  settled ${String(s.heliMissingSettled).padStart(4)}   rifle off-pose ${String(s.rifleBad).padStart(4)}/${String(s.rifleChecked).padEnd(4)} settled ${String(s.rifleBadSettled).padStart(4)}  stale ${s.rifleStale}  maxErr ${s.maxRifleErr.toFixed(3)}m`
+        `  ${name.padEnd(10)} ${((Date.now() - t0) / 1000).toFixed(0).padStart(3)}s  heli missing ${String(s.heliMissing).padStart(5)}/${String(s.heliShould).padEnd(5)} (${pct(s.heliMissing, s.heliShould).padStart(6)})  settled ${String(s.heliMissingSettled).padStart(4)}   rifle off-pose ${String(s.rifleBad).padStart(4)}/${String(s.rifleChecked).padEnd(4)} settled ${String(s.rifleBadSettled).padStart(4)}  stale ${s.rifleStale}  maxPartErr ${s.maxRifleErr.toFixed(3)}m maxProgErr ${(s.maxProgErr || 0).toFixed(2)}`
       );
       for (const [k, v] of Object.entries(s.reasons)) console.log(`      ${String(v).padStart(5)}  ${k}`);
     }

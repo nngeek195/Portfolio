@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
+import { model } from '@/lib/models';
 import { dbg, dbgEvent } from '@/lib/debug';
 import DebugOverlay from '@/components/debug/DebugOverlay';
 
@@ -11,6 +12,8 @@ import DebugOverlay from '@/components/debug/DebugOverlay';
 const SharedCanvas = dynamic(() => import('./SharedCanvas'), { ssr: false });
 // The companion helicopter that flies the whole page (its own chunk, same three.js chunk).
 const CompanionHeli = dynamic(() => import('./companion/CompanionHeli'), { ssr: false });
+// After a fallback the helicopter carries on as the flat still (no three.js in this chunk).
+const FlatCompanion = dynamic(() => import('./companion/FlatCompanion'), { ssr: false });
 
 /**
  * Calls back once the page has finished loading, the hero's CSS intro has
@@ -111,6 +114,8 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
     fallbackPending.current = true;
     dbgEvent(`fallback requested (${reason}); waiting for scroll to stop`);
     let timer = 0;
+    // Have the flat helicopter's image ready before the swap.
+    new Image().src = model('heli').poster.src;
     const apply = () => {
       window.removeEventListener('scroll', arm);
       console.info('3D switched off for this visit (device could not keep a smooth frame rate); showing flat renders.');
@@ -126,6 +131,11 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
     arm();
   }, []);
   const active3D = enabled && !fellBack;
+  useEffect(() => {
+    dbg.hooks.fallback = onFallback;
+    // Preload the flat helicopter's chunk so a fallback swap has nothing to wait for.
+    if (enabled) void import('./companion/FlatCompanion');
+  }, [enabled, onFallback]);
 
   // Swap the hero's pre-rendered helicopter for the live one once the page is idle.
   useEffect(() => {
@@ -148,6 +158,7 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
       {children}
       {active3D && canvasRequested && <SharedCanvas active={visible.size > 0} onFallback={onFallback} />}
       {active3D && companion && <CompanionHeli onVisible={onCompanionVisible} />}
+      {enabled && fellBack && <FlatCompanion />}
       <DebugOverlay />
     </ThreeContext.Provider>
   );

@@ -16,6 +16,8 @@ export type DebugState = {
   /** Live ScrollTrigger instances of the scenes (read for expected values). */
   triggers: Record<string, { progress: number; start: number; end: number; isActive: boolean } | undefined>;
   events: string[];
+  /** Test hooks (set by the 3D layer; only reachable with ?debug=1 via window.__dbg). */
+  hooks: { fallback?: (reason?: string) => void };
 };
 
 export const dbg: DebugState = {
@@ -26,6 +28,7 @@ export const dbg: DebugState = {
   pistol: { loaded: false, applied: 0, expected: 0, lastFrameAt: 0 },
   triggers: {},
   events: [],
+  hooks: {},
 };
 
 /** Notable one-off events (fallback, dpr change, model loaded, refresh), newest last. */
