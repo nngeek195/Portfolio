@@ -10,8 +10,9 @@ import { HELI_LIVE_ATTR } from '@/lib/motion/heli';
 import { dbg, dbgEvent } from '@/lib/debug';
 import { getAudioContext, useSoundOn } from '@/lib/audio/sound';
 import type { RotorAudio } from '@/lib/audio/rotor';
-import { prepareModel, applyNightVision, type NightVisionUniforms } from '../nightVision';
-import { Environment, ModelErrorBoundary } from '../views/ModelView';
+import { prepareModel, applyNightVision, setEdge, type NightVisionUniforms } from '../nightVision';
+import { Environment, ModelErrorBoundary, NightLights } from '../views/ModelView';
+import { LOOK } from '../look';
 import { createDirector, type Director } from './director';
 import { holdLive, lastHeli } from './handoff';
 import { requestRefresh } from '@/lib/motion/refresh';
@@ -45,6 +46,7 @@ function buildRig(gltfScene: THREE.Object3D, gl: THREE.WebGLRenderer) {
   const heli = root.getObjectByName('rotor_main')?.parent ?? root;
   const uniforms: NightVisionUniforms = { uNV: { value: 0.85 }, uBright: { value: 1 } };
   const materials = prepareModel(heli, uniforms);
+  for (const list of materials.values()) setEdge(list, LOOK.heliEdge);
   const bladeMats = materials.get('rotor_main') ?? [];
   for (const m of bladeMats) m.transparent = true;
 
@@ -296,7 +298,7 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
     shimmer.uniforms.uTime.value = t;
     shimmer.uniforms.uStrength.value = side * (0.6 + blur * 0.4);
     uniforms.uNV.value = r.nv;
-    uniforms.uBright.value = r.bright;
+    uniforms.uBright.value = r.bright * LOOK.heliExposure;
 
     // Searchlight from the belly to its target (scene px, y up).
     lightAnchor.getWorldPosition(v3);
@@ -368,10 +370,7 @@ export default function CompanionHeli({ onVisible, onFailed }: { onVisible: (vis
   return (
     <View className="pointer-events-none fixed inset-0" index={10}>
       <OrthographicCamera makeDefault position={[0, 0, 1000]} near={1} far={4000} />
-      <ambientLight intensity={0.25} />
-      <hemisphereLight args={['#d8ffd0', '#0b120b', 0.7]} />
-      <directionalLight position={[-2, 3, 4]} intensity={2.2} />
-      <directionalLight position={[3, 1, -3]} intensity={1.6} color="#7cff5b" />
+      <NightLights />
       <Environment />
       <ModelErrorBoundary key={attempt} onError={onError}>
         <Suspense fallback={null}>

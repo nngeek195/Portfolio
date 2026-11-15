@@ -1,11 +1,19 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { LOOK } from './look';
 
 // Shared "night vision" grade for every 3D model: after normal PBR lighting, the
 // final colour is converted to green phosphor luminance (strength uNV). Parts
 // highlighted with emissive green therefore glow brighter, like the HUD accent.
+// Brightness knobs (gain, gamma, floor, lift, edge glow) live in ./look.ts.
 export const NV_UNIFORM = { value: 0.85 };
 const FULL_BRIGHT = { value: 1 };
+const GRADE = {
+  uGain: { value: LOOK.nvGain },
+  uGamma: { value: LOOK.nvGamma },
+  uFloor: { value: LOOK.nvFloor },
+  uLift: { value: LOOK.partLift },
+};
 
 /** Uniforms for a model's own grade (the companion helicopter fades its grade and brightness independently). */
 export type NightVisionUniforms = { uNV: { value: number }; uBright: { value: number } };
@@ -14,13 +22,19 @@ export function applyNightVision(material: THREE.Material, uniforms?: NightVisio
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uNV = uniforms?.uNV ?? NV_UNIFORM;
     shader.uniforms.uBright = uniforms?.uBright ?? FULL_BRIGHT;
+    Object.assign(shader.uniforms, GRADE);
+    // Per-material edge glow (set with setEdge), e.g. on exploded parts.
+    shader.uniforms.uEdge = (material.userData.nvEdge ??= { value: 0 });
     shader.fragmentShader =
-      'uniform float uNV;\nuniform float uBright;\n' +
+      'uniform float uNV;\nuniform float uBright;\nuniform float uGain;\nuniform float uGamma;\nuniform float uFloor;\nuniform float uLift;\nuniform float uEdge;\n' +
       shader.fragmentShader.replace(
         '#include <dithering_fragment>',
         `#include <dithering_fragment>
+        // Fresnel edge glow (silhouette edges brighten) + a small overall lift, before the grade.
+        float nvFres = pow(1.0 - clamp(abs(dot(normal, normalize(vViewPosition))), 0.0, 1.0), 2.0);
+        gl_FragColor.rgb += vec3(0.42, 1.0, 0.34) * (nvFres * uEdge + uLift);
         float nvL = dot(gl_FragColor.rgb, vec3(0.299, 0.587, 0.114));
-        vec3 nvC = vec3(0.42, 1.0, 0.34) * pow(max(nvL, 0.0), 0.85) * 1.4;
+        vec3 nvC = vec3(0.42, 1.0, 0.34) * (uFloor + pow(max(nvL, 0.0), uGamma) * uGain);
         gl_FragColor.rgb = mix(gl_FragColor.rgb, nvC, uNV) * uBright;`
       );
   };
@@ -54,6 +68,12 @@ export function prepareModel(root: THREE.Object3D, uniforms?: NightVisionUniform
 }
 
 const GREEN = new THREE.Color('#7cff5b');
+
+/** Sets the fresnel edge glow (0..LOOK.edgeGlow) on a part's materials. */
+export function setEdge(materials: THREE.MeshStandardMaterial[] | undefined, amount: number) {
+  if (!materials) return;
+  for (const m of materials) (m.userData.nvEdge ??= { value: 0 }).value = amount;
+}
 
 /** Sets an emissive green glow (0..1) on a part's materials. */
 export function setGlow(materials: THREE.MeshStandardMaterial[] | undefined, amount: number) {

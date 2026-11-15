@@ -8,7 +8,8 @@ import { SIDEARM_TRAITS } from '@/lib/profile';
 import { model } from '@/lib/models';
 import { sceneProgress } from '@/lib/motion/scene-progress';
 import { requestRefresh } from '@/lib/motion/refresh';
-import { prepareModel, setGlow } from '../nightVision';
+import { prepareModel, setEdge, setGlow } from '../nightVision';
+import { LOOK } from '../look';
 import ModelView, { ReadySignal } from './ModelView';
 import { dbg } from '@/lib/debug';
 
@@ -68,6 +69,7 @@ function Pistol({ onReady }: { onReady: () => void }) {
       const step = STEP_OF[part.name] ?? SIDEARM_TRAITS.findIndex((tr) => tr.part === part.name);
       const out = smooth(THREE.MathUtils.clamp((p - (TRAIT_START + step * TRAIT_STEP)) / (TRAIT_STEP * 0.8), 0, 1)) * (1 - back);
       part.position.set(home.x + off[0] * out, home.y + off[1] * out, home.z + off[2] * out);
+      setEdge(materials.get(part.name), LOOK.edgeGlow * Math.min(1, out * 1.6));
       // The part being described glows; everything settles once cleared.
       const activeStep = Math.floor((p - TRAIT_START) / TRAIT_STEP);
       setGlow(materials.get(part.name), step === activeStep && back < 1 ? 0.5 + Math.sin(t * 3) * 0.2 : 0);

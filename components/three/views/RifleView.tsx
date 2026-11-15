@@ -10,7 +10,8 @@ import { loadoutApproach, rifleDropLanded } from '@/lib/motion/heli';
 import { sceneProgress } from '@/lib/motion/scene-progress';
 import { requestRefresh } from '@/lib/motion/refresh';
 import { dbg, dbgEvent } from '@/lib/debug';
-import { prepareModel, setGlow } from '../nightVision';
+import { prepareModel, setEdge, setGlow } from '../nightVision';
+import { LOOK } from '../look';
 import ModelView, { ReadySignal } from './ModelView';
 
 const URL = model('rifle').url;
@@ -86,6 +87,8 @@ function Rifle({ onReady }: { onReady: () => void }) {
         const landed = rifleDropLanded(approach, i);
         const fall = (1 - landed) * DROP_HEIGHT;
         part.position.set(home.x + off[0] * loose, home.y + off[1] * loose + bob + fall, home.z + off[2] * loose);
+        // Edge glow while the part is out of place (exploded or still coming down), so the assembly reads.
+        setEdge(materials.get(name), LOOK.edgeGlow * Math.min(1, Math.max(loose, 1 - landed) * 1.6));
       }
     });
 
