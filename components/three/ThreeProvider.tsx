@@ -87,6 +87,9 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
   // Set when the device can't keep up at runtime (see SharedCanvas): back to flat renders.
   const [fellBack, setFellBack] = useState(false);
   const [fallbackReason, setFallbackReason] = useState('');
+  // Handoff: the flat helicopter mounts first; 3D switches off once it has drawn (onFlatReady).
+  const [flatMounted, setFlatMounted] = useState(false);
+  const onFlatReady = useCallback(() => setFellBack(true), []);
   const fallbackPending = useRef(false);
   const [canvasRequested, setCanvasRequested] = useState(false);
   const [visible, setVisibleSet] = useState<ReadonlySet<string>>(() => new Set());
@@ -121,7 +124,7 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
       console.info('3D switched off for this visit (device could not keep a smooth frame rate); showing flat renders.');
       dbgEvent('3D fallback applied');
       setFallbackReason(reason);
-      setFellBack(true);
+      setFlatMounted(true);
     };
     function arm() {
       window.clearTimeout(timer);
@@ -158,7 +161,7 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
       {children}
       {active3D && canvasRequested && <SharedCanvas active={visible.size > 0} onFallback={onFallback} />}
       {active3D && companion && <CompanionHeli onVisible={onCompanionVisible} />}
-      {enabled && fellBack && <FlatCompanion />}
+      {enabled && flatMounted && <FlatCompanion onReady={onFlatReady} />}
       <DebugOverlay />
     </ThreeContext.Provider>
   );

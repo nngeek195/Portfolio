@@ -13,7 +13,7 @@ import type { RotorAudio } from '@/lib/audio/rotor';
 import { prepareModel, applyNightVision, type NightVisionUniforms } from '../nightVision';
 import { Environment, ModelErrorBoundary } from '../views/ModelView';
 import { createDirector, type Director } from './director';
-import { lastHeli } from './handoff';
+import { holdLive, lastHeli } from './handoff';
 import { requestRefresh } from '@/lib/motion/refresh';
 import { makeCrew, makeParticles, makeRotorDisc, makeSearchlight, makeShadow, makeShimmer, makeStrobe, makeTailNumber } from './effects';
 
@@ -152,11 +152,11 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
   }, []);
 
   // Mark the page "live" once the first 3D frame is up (CSS fades the flat stills); undo on unmount.
-  const live = useRef(false);
+  const live = useRef<(() => void) | null>(null);
   useEffect(
     () => () => {
-      document.documentElement.removeAttribute(HELI_LIVE_ATTR);
-      dbg.heli.live = false;
+      live.current?.();
+      live.current = null;
       dbg.heli.loaded = false;
       onVisible(false);
     },
@@ -341,8 +341,9 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
       live: document.documentElement.hasAttribute(HELI_LIVE_ATTR),
     });
     if (!live.current) {
-      live.current = true;
-      requestAnimationFrame(() => document.documentElement.setAttribute(HELI_LIVE_ATTR, ''));
+      let release: (() => void) | null = null;
+      const raf = requestAnimationFrame(() => (release = holdLive('3d')));
+      live.current = () => (cancelAnimationFrame(raf), release?.());
     }
   });
 

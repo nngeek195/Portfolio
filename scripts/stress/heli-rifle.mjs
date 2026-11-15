@@ -95,8 +95,11 @@ const SAMPLER = `(() => {
       let reason = '';
       const fresh = Math.abs(h.frameScrollY - scrollY) < 60 || now - h.lastFrameAt < 150;
       const inView = h.x + h.size * 0.3 > 0 && h.x - h.size * 0.3 < innerWidth && h.y + h.size * 0.15 > 0 && h.y - h.size * 0.15 < innerHeight;
-      if (d.three.fellBack) reason = 'fell back to flat renders';
-      else if (!d.three.companionMounted || !h.loaded) reason = 'companion not mounted';
+      // After a fallback the flat stand-in writes the same heli state (owner "... (flat)"); without
+      // one (old behaviour) the state goes stale and the helicopter counts as missing.
+      const flat = d.three.fellBack && String(h.owner).endsWith('(flat)');
+      if (d.three.fellBack && !flat) reason = 'fell back, no helicopter';
+      else if (!flat && (!d.three.companionMounted || !h.loaded)) reason = 'companion not mounted';
       else if (!h.finite) reason = 'NaN pose';
       else if (!inView) reason = 'off screen (owner ' + h.owner + ')';
       else if (!fresh) reason = 'frames not rendering (loop ' + d.canvas.frameloop + ')';
@@ -251,7 +254,11 @@ async function main() {
         for (let i = 0; i < 30; i++) { await wheel(i < 15 ? 260 : -260); await sleep(60); }
         await sleep(2500);
         const m = await maxY();
-        for (let i = 0; i < 10; i++) { await jump(Math.round(Math.random() * m)); await sleep(1300); }
+        for (let i = 0; i < 6; i++) { await jump(Math.round(Math.random() * m)); await sleep(1300); }
+        await sleep(3500); // the swap happens here, once the page has been still for 1.2 s
+        for (let i = 0; i < 8; i++) { await jump(Math.round(Math.random() * m)); await sleep(1300); }
+        for (let i = 0; i < 20; i++) { await wheel(i < 10 ? 300 : -300); await sleep(60); }
+        await sleep(1500);
         console.log('  (after fallback: ' + JSON.stringify(await ev('({ fellBack: __dbg.three.fellBack, owner: __dbg.heli.owner })')) + ')');
       },
     };
