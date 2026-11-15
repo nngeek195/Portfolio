@@ -513,7 +513,7 @@ html[data-boot="on"] .hero-intro .intro-frame {
 .boot-pct [data-boot-pct] {
   display: inline-block;
   width: 1.6em; /* fits "100": no shift as the digits change */
-  text-align: right;
+  text-align: center;
 }
 .boot-pct-sign {
   margin-left: 4px;
@@ -635,6 +635,60 @@ html[data-boot="exit"] .boot[data-fast] .boot-lid {
 }
 html[data-boot="exit"] .boot[data-fast] .boot-line {
   animation-duration: 0.3s;
+}
+
+/* ---- Simple version: reduced motion, phones / small screens, FX: LITE -------
+   (html[data-boot-lite], set by the inline script). Logo, percentage and bar,
+   then a plain fade: no radar, typing, flashing, sliding or 3D downloads. */
+html[data-boot-lite] .boot-term,
+html[data-boot-lite] .boot-radar,
+html[data-boot-lite] .boot-corner,
+html[data-boot-lite] .boot-hud,
+html[data-boot-lite] .boot-line {
+  display: none;
+}
+html[data-boot-lite] .boot-lid {
+  background: var(--color-void);
+}
+html[data-boot-lite] .boot-core {
+  transform: translate(-50%, -50%);
+  gap: 16px;
+}
+html[data-boot-lite] .boot-mark {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  background: var(--color-bone);
+  color: var(--color-void);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+html[data-boot-lite] .boot-pct {
+  font-size: 56px;
+}
+html[data-boot-lite] .boot-bar > span {
+  width: 10px;
+  height: 6px;
+}
+html[data-boot-lite] .boot-skip {
+  right: 50%;
+  transform: translateX(50%);
+  bottom: 28px;
+}
+@media (hover: none) {
+  .boot-skip [aria-hidden] { display: none; } /* no Esc key on touch screens */
+}
+html[data-boot="exit"][data-boot-lite] .boot {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+html[data-boot="exit"][data-boot-lite] .boot-lid {
+  transform: none;
+  transition: none;
 }
 
 /* ==========================================================================

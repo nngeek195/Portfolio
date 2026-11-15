@@ -12,6 +12,7 @@ export const BOOT_MAX_MS = 4000; // hard cap: show the site anyway, keep loading
 const LOCKED_MS = 560; // UPLINK ESTABLISHED flash
 const EXIT_MS = 900; // eye-slit opening
 const EXIT_FAST_MS = 400; // after SKIP
+const EXIT_LITE_MS = 320; // simple version: plain fade
 
 // Screen-reader milestones (the live region is not updated on every percent).
 const MILESTONE: Record<LineId, string> = {
@@ -63,10 +64,13 @@ export default function BootController() {
     // 1. "locked" (UPLINK ESTABLISHED) -> 2. eye-slit opening + hero intro -> 3. done.
     // The scenes are re-measured while the screen is still covered, so no pinned scene
     // can jump in view (the scroll lock keeps the same page width, see globals.css).
+    // Simple version (reduced motion, small screens, FX: LITE): straight to a plain fade.
+    const lite = root.hasAttribute('data-boot-lite');
     const exit = (fast = false) => {
       if (exiting) return;
       exiting = true;
       cancelAnimationFrame(raf);
+      if (lite) fast = true;
       if (!fast) boot.dataset.phase = 'locked';
       timers.push(
         window.setTimeout(
@@ -75,7 +79,7 @@ export default function BootController() {
             window.__bootExitAt = performance.now();
             if (fast) boot.dataset.fast = '';
             root.setAttribute('data-boot', 'exit'); // hero intro + night-vision flash start now
-            timers.push(window.setTimeout(finish, fast ? EXIT_FAST_MS : EXIT_MS));
+            timers.push(window.setTimeout(finish, lite ? EXIT_LITE_MS : fast ? EXIT_FAST_MS : EXIT_MS));
           },
           fast ? 0 : LOCKED_MS
         )
