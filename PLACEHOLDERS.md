@@ -14,7 +14,6 @@ grep -rn "PLACEHOLDER:" app components lib public Model/CREDITS.md
 | `profile-photo` | `lib/content.ts`, `public/images/placeholders/profile.svg` | Only shown if `settings/profile` in Firestore has no images. Upload photos in `/admin/dashboard/media`. |
 | `cert-image` | `lib/certificates.ts`, `public/images/placeholders/cert.svg` | Fallback for certificates with no image, or an image that fails to load. |
 | `finops-cert-image` | `lib/certificates.ts` ("Introduction to FinOps") | The old image was a signed Skilljar URL that expired (403). Upload the certificate image and set `img`. |
-| `about-page` | `app/(site)/about/page.tsx` | `/about` is not linked from anywhere, uses mock data, and says "Niranga **Kumara**". Decide: delete it, redirect it to `/#about`, or keep it. |
 | `gun-license-record` | `Model/CREDITS.md` | Purchase details for the rifle and pistol rights (seller, date, licence ID). |
 
 ## Coming in later phases

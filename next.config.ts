@@ -11,6 +11,13 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     qualities: [75],
   },
+  async redirects() {
+    return [
+      // The old standalone About page was replaced by the About section on the
+      // home page. Temporary (307) so browsers don't cache it if this changes.
+      { source: "/about", destination: "/#about", permanent: false },
+    ];
+  },
 };
 
 export default nextConfig;
