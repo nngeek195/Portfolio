@@ -34,6 +34,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
+      // The public site's boot preloader script sets data-boot on <html> before hydration.
+      suppressHydrationWarning
       lang="en"
       className={`${display.variable} ${stencil.variable} ${sans.variable} ${mono.variable} h-full antialiased`}
     >

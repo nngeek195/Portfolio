@@ -9,6 +9,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 import { useGSAP } from '@gsap/react';
 import { installAutoRefresh } from '@/lib/motion/refresh';
+import { setLenis } from '@/lib/motion/lenis';
+import { isBooting } from '@/lib/boot/state';
 
 gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin, useGSAP);
 
@@ -42,9 +44,12 @@ export default function MotionProvider({ children }: { children: React.ReactNode
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
     lenisRef.current = instance;
+    setLenis(instance);
+    // The boot preloader keeps the page still until it exits (it starts Lenis again).
+    if (isBooting()) instance.stop();
 
     // Pause while something locks body scrolling (modals).
-    const syncLock = () => (document.body.style.overflow === 'hidden' ? instance.stop() : instance.start());
+    const syncLock = () => (document.body.style.overflow === 'hidden' || isBooting() ? instance.stop() : instance.start());
     const observer = new MutationObserver(syncLock);
     observer.observe(document.body, { attributes: true, attributeFilter: ['style'] });
 
@@ -53,6 +58,7 @@ export default function MotionProvider({ children }: { children: React.ReactNode
       gsap.ticker.remove(tick);
       instance.destroy();
       lenisRef.current = null;
+      setLenis(null);
     };
   }, []);
 

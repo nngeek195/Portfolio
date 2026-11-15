@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import dynamic from 'next/dynamic';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
 import { model } from '@/lib/models';
+import { introStartedAt, whenBootDone } from '@/lib/boot/state';
 import { dbg, dbgEvent } from '@/lib/debug';
 import DebugOverlay from '@/components/debug/DebugOverlay';
 
@@ -28,7 +29,8 @@ function whenIdleAfterLoad(cb: () => void) {
     const ric = window.requestIdleCallback ?? ((f: () => void) => window.setTimeout(f, 200));
     idleId = ric(() => !cancelled && cb(), { timeout: 3000 });
   };
-  const afterIntro = () => window.setTimeout(idle, Math.max(0, 2600 - performance.now()));
+  // The hero intro starts when the boot preloader exits (or at navigation start without one).
+  const afterIntro = () => void whenBootDone().then(() => !cancelled && window.setTimeout(idle, Math.max(0, introStartedAt() + 2600 - performance.now())));
   if (document.readyState === 'complete') afterIntro();
   else window.addEventListener('load', afterIntro, { once: true });
   return () => {

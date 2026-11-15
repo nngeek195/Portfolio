@@ -2,12 +2,17 @@ import SiteNav from '@/components/site/SiteNav';
 import SiteFooter from '@/components/site/SiteFooter';
 import MotionProvider from '@/components/motion/MotionProvider';
 import Reveals from '@/components/motion/Reveals';
+import BootScreen from '@/components/boot/BootScreen';
+import BootController from '@/components/boot/BootController';
 
 // Shared shell for the public pages (/, /projects, /articles).
 // The admin dashboard has its own layout and gets none of this — including the
 // scroll engine (Lenis/GSAP), which only runs inside MotionProvider here.
+// BootScreen (first in the HTML) is the "Establishing uplink" preloader.
 export default function SiteLayout({ children }: LayoutProps<'/'>) {
   return (
+    <>
+    <BootScreen />
     <MotionProvider>
       <div className="film-grain flex min-h-screen flex-col bg-void text-bone">
         <a
@@ -23,6 +28,8 @@ export default function SiteLayout({ children }: LayoutProps<'/'>) {
         <SiteFooter />
       </div>
       <Reveals />
+      <BootController />
     </MotionProvider>
+    </>
   );
 }

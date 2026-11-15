@@ -239,6 +239,352 @@ body {
 }
 
 /* ==========================================================================
+   Boot preloader, "Establishing uplink" (components/boot). Shown only while
+   html[data-boot] is "on" / "exit" (set by its inline script before first
+   paint). Animates transform and opacity only; fixed overlay, no layout shift.
+   ========================================================================== */
+.boot {
+  display: none;
+}
+html[data-boot="on"] .boot,
+html[data-boot="exit"] .boot {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  color: var(--color-ash);
+  font-family: var(--font-mono);
+}
+/* Failsafe: if the app scripts never take over, get out of the way. */
+html[data-boot="on"] .boot {
+  animation: boot-failsafe 0.4s 9s forwards;
+}
+@keyframes boot-failsafe {
+  to { opacity: 0; visibility: hidden; }
+}
+/* Scroll lock while booting (set by BootController); stable gutter = no shift.
+   Lenis's stopped state uses overflow: clip, which ignores scrollbar-gutter, so
+   keep overflow: hidden here (or the page would be measured 15px too wide). */
+html.boot-lock,
+html.boot-lock.lenis-stopped,
+html[data-boot="on"].lenis-stopped,
+html[data-boot="exit"].lenis-stopped {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+/* The hero renders fully under the preloader (so LCP is the first paint) and
+   its intro (night-vision flash, copy rising in) restarts when the preloader exits. */
+html[data-boot="on"] .hero-intro .nv-flash,
+html[data-boot="on"] .hero-intro .intro-up,
+html[data-boot="on"] .hero-intro .intro-heli,
+html[data-boot="on"] .hero-intro .intro-frame {
+  animation: none !important;
+}
+
+.boot-visual,
+.boot-stage {
+  position: absolute;
+  inset: 0;
+}
+.boot-lid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50.5%;
+  background: #050607;
+  will-change: transform;
+}
+.boot-lid-top { top: 0; }
+.boot-lid-bottom { bottom: 0; }
+.boot-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  margin-top: -0.5px;
+  background: var(--color-nv);
+  box-shadow: 0 0 10px rgb(124 255 91 / 0.9), 0 0 28px rgb(124 255 91 / 0.35);
+  transform: scaleX(0);
+  animation: boot-line 0.6s 0.1s cubic-bezier(0.7, 0, 0.2, 1) forwards;
+}
+@keyframes boot-line {
+  to { transform: scaleX(1); }
+}
+
+/* Corner brackets draw in from their corners. */
+.boot-corner {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-color: rgb(124 255 91 / 0.6);
+  border-style: solid;
+  border-width: 0;
+  transform: scale(0);
+  animation: boot-pop 0.45s 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.boot-corner-tl { top: 20px; left: 20px; border-top-width: 1px; border-left-width: 1px; transform-origin: top left; }
+.boot-corner-tr { top: 20px; right: 20px; border-top-width: 1px; border-right-width: 1px; transform-origin: top right; }
+.boot-corner-bl { bottom: 20px; left: 20px; border-bottom-width: 1px; border-left-width: 1px; transform-origin: bottom left; }
+.boot-corner-br { bottom: 20px; right: 20px; border-bottom-width: 1px; border-right-width: 1px; transform-origin: bottom right; }
+@keyframes boot-pop {
+  to { transform: scale(1); }
+}
+
+.boot-hud {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: boot-in 0.4s 0.6s forwards;
+}
+.boot-hud-tl { top: 34px; left: 40px; }
+.boot-hud-tr { top: 34px; right: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+.boot-hud-bl { bottom: 34px; left: 40px; }
+.boot-rec { color: var(--color-signal); display: inline-flex; align-items: center; gap: 6px; }
+.boot-rec-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-signal);
+  animation: boot-blink 1.2s steps(2, jump-none) infinite;
+}
+@keyframes boot-in {
+  to { opacity: 1; }
+}
+@keyframes boot-blink {
+  50% { opacity: 0.15; }
+}
+
+/* Terminal: each character appears (opacity) on a schedule; status ticks to OK. */
+.boot-term {
+  position: absolute;
+  left: max(6vw, 48px);
+  bottom: calc(50% + 28px); /* sits above the CRT line, like a log scrolling up */
+  display: grid;
+  gap: 10px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: rgb(124 255 91 / 0.85);
+}
+.boot-li {
+  position: relative;
+  white-space: nowrap;
+}
+.boot-ch,
+.boot-dots {
+  opacity: 0;
+  animation: boot-in 1ms var(--d) forwards;
+}
+.boot-dots {
+  margin-left: 2px;
+  color: var(--color-ash);
+}
+.boot-li:not([data-state="ok"]) .boot-dots {
+  animation: boot-in 1ms var(--d) forwards, boot-blink 0.9s calc(var(--d) + 50ms) infinite;
+}
+.boot-ok {
+  position: absolute;
+  margin-left: 10px;
+  color: var(--color-bone);
+  opacity: 0;
+}
+.boot-li[data-state="ok"] .boot-ok {
+  animation: boot-in 0.15s var(--end) forwards;
+}
+.boot-li[data-state="ok"] .boot-dots {
+  animation: boot-in 1ms var(--d) forwards;
+}
+
+/* Centre piece */
+.boot-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, calc(-50% + 70px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.boot-radar {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgb(124 255 91 / 0.08), rgb(5 6 7 / 0.95) 70%);
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(0.85);
+  animation: boot-radar-in 0.6s 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes boot-radar-in {
+  to { opacity: 1; transform: scale(1); }
+}
+.boot-radar svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+}
+.boot-radar-grid {
+  stroke: rgb(124 255 91 / 0.22);
+  stroke-width: 0.6;
+}
+.boot-radar-grid .major { stroke: rgb(124 255 91 / 0.6); }
+.boot-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: conic-gradient(from 0deg, rgb(124 255 91 / 0.42), rgb(124 255 91 / 0.08) 14%, transparent 26%);
+  animation: boot-spin 2.4s linear infinite;
+}
+@keyframes boot-spin {
+  to { transform: rotate(360deg); }
+}
+.boot-blip {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 9999px;
+  background: var(--color-nv);
+  box-shadow: 0 0 8px var(--color-nv);
+  opacity: 0;
+  animation: boot-blip 2.4s var(--b) ease-out infinite;
+}
+@keyframes boot-blip {
+  0% { opacity: 1; transform: scale(1.3); }
+  60%, 100% { opacity: 0; transform: scale(0.8); }
+}
+.boot-crosshair {
+  stroke: var(--color-nv);
+  stroke-width: 1.4;
+  transform: rotate(45deg) scale(1.6);
+  opacity: 0;
+  animation: boot-lockon 0.9s 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.boot-crosshair .lock {
+  stroke: var(--color-bone);
+  opacity: 0;
+  animation: boot-in 0.2s 1.8s forwards, boot-blink 0.5s 1.8s 3;
+}
+@keyframes boot-lockon {
+  to { opacity: 1; transform: rotate(0deg) scale(1); }
+}
+.boot-rotor .blades {
+  fill: rgb(232 228 217 / 0.9);
+  transform-origin: 100px 100px;
+  animation: boot-spin 0.36s linear infinite;
+}
+.boot-rotor .disc {
+  fill: rgb(124 255 91 / 0.18);
+  opacity: calc(0.2 + var(--boot-p, 0) * 0.8);
+  transition: opacity 0.3s;
+}
+.boot-rotor .hub { fill: var(--color-nv); }
+
+.boot-mark {
+  display: none;
+}
+.boot-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.boot-pct {
+  display: flex;
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 84px;
+  line-height: 0.9;
+  color: var(--color-bone);
+  font-variant-numeric: tabular-nums;
+}
+.boot-pct [data-boot-pct] {
+  display: inline-block;
+  width: 1.6em; /* fits "100": no shift as the digits change */
+  text-align: right;
+}
+.boot-pct-sign {
+  margin-left: 4px;
+  font-size: 28px;
+  color: var(--color-nv);
+}
+.boot-label {
+  position: relative;
+  display: grid;
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+.boot-label > span {
+  grid-area: 1 / 1;
+  text-align: center;
+}
+.boot-label-done {
+  color: var(--color-nv);
+  opacity: 0;
+}
+.boot-bar {
+  display: flex;
+  gap: 4px;
+}
+.boot-bar > span {
+  position: relative;
+  width: 14px;
+  height: 9px;
+  background: var(--color-steel);
+  transform: skewX(-18deg);
+}
+.boot-bar > span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-nv);
+  box-shadow: 0 0 6px rgb(124 255 91 / 0.8);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.boot-bar > span.on::after {
+  opacity: 1;
+}
+
+.boot-skip {
+  position: absolute;
+  right: 40px;
+  bottom: 30px;
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-bone);
+  background: rgb(26 30 34 / 0.8);
+  box-shadow: inset 0 0 0 1px var(--color-steel);
+  opacity: 0;
+  animation: boot-in 0.3s 0.8s forwards;
+}
+.boot-skip:hover,
+.boot-skip:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--color-nv);
+}
+
+/* Exit (simple fade; the cinematic exit builds on this) */
+html[data-boot="exit"] .boot {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+/* ==========================================================================
    Companion helicopter (components/three/companion). While the live 3D
    helicopter flies, the flat stills it replaces fade out (they stay in the
    layout: the hero still keeps animating as the 3D one's flight guide).
