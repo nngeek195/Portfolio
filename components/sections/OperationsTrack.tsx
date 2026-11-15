@@ -82,17 +82,24 @@ export default function OperationsTrack({ projects, articles, totalProjects }: {
 
   return (
     <>
-      <div ref={pinRef}>
+      <div ref={pinRef} data-ops="pin">
       <p className="mb-4 flex items-center justify-end gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-ash" aria-hidden="true">
         <span ref={hintRef}>Swipe / scroll sideways</span> <ArrowRight size={13} />
       </p>
       <div ref={viewportRef} className="-mx-5 overflow-x-auto px-5 pb-6 no-scrollbar md:-mx-8 md:px-8" role="region" aria-label="Featured operations" tabIndex={0}>
-        <ol ref={trackRef} data-reveal="stagger" className="flex snap-x snap-mandatory gap-5">
+        <ol ref={trackRef} data-reveal="stagger" data-ops="track" className="relative flex snap-x snap-mandatory gap-5">
+          {/* Tactical-map route between the landing zones; drawn by the 3D helicopter's director, shown only while it flies */}
+          <li aria-hidden="true" className="ops-route pointer-events-none absolute inset-0 z-10">
+            <svg className="h-full w-full overflow-visible">
+              <polyline data-ops-route="full" fill="none" stroke="rgb(124 255 91 / 0.35)" strokeWidth="2" strokeDasharray="1 9" strokeLinecap="round" />
+              <polyline data-ops-route="done" fill="none" stroke="rgb(124 255 91 / 0.9)" strokeWidth="2.5" strokeDasharray="1 7" strokeLinecap="round" />
+            </svg>
+          </li>
           {projects.map((p, i) => {
             const name = p.repoName || p.title || 'Untitled operation';
             const excerpt = p.description ? stripHtml(p.description) : '';
             return (
-              <li key={p.id} className="w-[min(82vw,360px)] shrink-0 snap-start">
+              <li key={p.id} data-lz={i} className="group/lz w-[min(82vw,360px)] shrink-0 snap-start">
                 <article className="clip-corner flex h-full flex-col bg-gunmetal ring-1 ring-inset ring-steel">
                   <div className="flex items-center justify-between border-b border-dashed border-steel px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ash">
                     <span className="text-nv">OP-{String(i + 1).padStart(2, '0')}</span>
@@ -107,6 +114,14 @@ export default function OperationsTrack({ projects, articles, totalProjects }: {
                       </div>
                     )}
                     <div className="scanlines absolute inset-0 opacity-40" aria-hidden="true" />
+                    {/* Landing-zone marker (tactical map, while the 3D helicopter flies); position matches the director's waypoint */}
+                    <span
+                      aria-hidden="true"
+                      className={`lz-mark absolute left-1/2 grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-dashed font-mono text-[9px] tracking-[0.15em] ${i % 2 ? 'top-[calc(50%+38px)]' : 'top-[calc(50%-38px)]'}`}
+                    >
+                      <span className="font-stencil text-xl leading-none">H</span>
+                      <span className="absolute -bottom-5 whitespace-nowrap">LZ-{String(i + 1).padStart(2, '0')}</span>
+                    </span>
                   </div>
                   <div className="flex flex-1 flex-col p-5">
                     <h3 className="font-display text-2xl font-bold uppercase leading-tight tracking-wide text-bone">{name}</h3>

@@ -245,6 +245,34 @@ body {
 html[data-heli-live] [data-heli-still] {
   opacity: 0 !important;
 }
+/* Operations tactical map: route + landing-zone markers only while the 3D helicopter flies. */
+.ops-route,
+.lz-mark {
+  display: none;
+}
+html[data-heli-live] .ops-route,
+html[data-heli-live] .lz-mark {
+  display: grid;
+}
+.lz-mark {
+  color: rgb(124 255 91 / 0.55);
+  border-color: rgb(124 255 91 / 0.4);
+  background: rgb(7 8 10 / 0.35);
+  transition: color 0.3s, border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
+[data-lz-active] .lz-mark {
+  color: var(--color-nv);
+  border-style: solid;
+  border-color: var(--color-nv);
+  background: rgb(124 255 91 / 0.12);
+  box-shadow: 0 0 18px rgb(124 255 91 / 0.45);
+}
+[data-lz] > article {
+  transition: box-shadow 0.3s;
+}
+html[data-heli-live] [data-lz-active] > article {
+  box-shadow: inset 0 0 0 1px rgb(124 255 91 / 0.75), inset 0 0 40px rgb(124 255 91 / 0.08);
+}
 
 /* ==========================================================================
    Intel viewer content (public project/article popup)
