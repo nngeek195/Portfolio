@@ -1,5 +1,5 @@
 import { MODELS } from '@/lib/models';
-import { getCapable } from '@/lib/three-capability';
+import { get3D } from '@/lib/three-capability';
 
 // Real loading progress for the boot preloader. Each terminal line is a task
 // with a weight; the percentage is the weighted share of work actually done.
@@ -68,7 +68,7 @@ export function startBootProgress(): BootProgress {
   };
 
   const home = !!document.getElementById('top');
-  const threeOk = home && getCapable();
+  const threeOk = home && get3D();
 
   // auth: we are running, so the app has hydrated.
   queueMicrotask(() => set('auth', 1));

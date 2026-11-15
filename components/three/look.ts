@@ -36,3 +36,15 @@ export const LOOK = {
    *  pulled back a little (the rifle and pistol are dark metal and need the full lift) [1]. */
   heliExposure: 0.82,
 } as const;
+
+/** Night-vision gain the flat renders were made to match (the grade before the visibility lift). */
+const NV_GAIN_BASE = 1.4;
+
+/**
+ * FX: LITE has no 3D, so the flat renders (helicopter stills, rifle and pistol
+ * schematics) stand in for the lifted 3D models. They get the same lift the
+ * night-vision gain gives the 3D models over the original grade, so LITE is
+ * never darker than FULL (checked with screenshots, see the FX: LITE commit).
+ * Applied in CSS through --fx-flat-lift (app/(site)/layout.tsx).
+ */
+export const FLAT_LIFT = +(LOOK.nvGain / NV_GAIN_BASE).toFixed(3);

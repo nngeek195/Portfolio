@@ -1,4 +1,5 @@
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
+import { getFx } from '@/lib/fx';
 
 // Shared by the 3D layer (ThreeProvider) and the boot preloader (which only
 // prefetches the 3D code and models on devices that will actually use them).
@@ -28,3 +29,13 @@ function detectCapable(): boolean {
 
 let capableCache: boolean | null = null;
 export const getCapable = () => (capableCache ??= detectCapable());
+
+/**
+ * Whether the 3D layer runs right now: a capable device with FX: FULL. FX: LITE
+ * switches it off (flat renders, no live helicopter) and can change at any time,
+ * so this is not cached; ?3d=on still forces it on for testing.
+ */
+export function get3D(): boolean {
+  if (new URLSearchParams(location.search).get('3d') === 'on') return true;
+  return getFx() !== 'lite' && getCapable();
+}

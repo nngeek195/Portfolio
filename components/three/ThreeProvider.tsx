@@ -2,7 +2,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
-import { getCapable } from '@/lib/three-capability';
+import { get3D } from '@/lib/three-capability';
+import { subscribeFx } from '@/lib/fx';
 import { model } from '@/lib/models';
 import { introStartedAt, whenBootDone } from '@/lib/boot/state';
 import { dbg, dbgEvent } from '@/lib/debug';
@@ -56,11 +57,8 @@ const isForced = () => new URLSearchParams(location.search).get('3d') === 'on';
 
 export default function ThreeProvider({ children }: { children: React.ReactNode }) {
   // Client-only decision without a setState-in-effect; false during SSR/hydration.
-  const enabled = useSyncExternalStore(
-    () => () => {},
-    getCapable,
-    () => false
-  );
+  // Follows the FX switch: LITE turns the whole 3D layer off (flat renders), FULL back on.
+  const enabled = useSyncExternalStore(subscribeFx, get3D, () => false);
   // Set when the device can't keep up at runtime (see SharedCanvas): back to flat renders.
   const [fellBack, setFellBack] = useState(false);
   const [fallbackReason, setFallbackReason] = useState('');

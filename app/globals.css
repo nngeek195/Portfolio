@@ -692,6 +692,38 @@ html[data-boot="exit"][data-boot-lite] .boot-lid {
 }
 
 /* ==========================================================================
+   FX: LITE (lib/fx.ts, html[data-fx="lite"]): low-power mode. The overlays
+   below only ever darken or add noise, so dropping them never makes the page
+   darker; the 3D layer is off (flat renders, see lib/three-capability get3D).
+   ========================================================================== */
+html[data-fx="lite"] .film-grain::after {
+  content: none;
+}
+html[data-fx="lite"] .scanlines {
+  background-image: none;
+}
+/* Flat renders stand in for the lifted 3D models, with the same lift
+   (--fx-flat-lift = FLAT_LIFT in components/three/look.ts, from LOOK.nvGain):
+   - rifle / pistol schematics (shaded renders): brightness lift
+   - helicopter stills (black silhouettes, which brightness can't lift): shown
+     night-vision lit instead, a dim phosphor-green body with its edge glow,
+     like the graded 3D helicopter they replace. Full opacity (the Debrief one
+     is faded only as a backdrop to the 3D lift-off). */
+html[data-fx="lite"] [data-model-slot] img {
+  filter: brightness(var(--fx-flat-lift, 1.2));
+}
+html[data-fx="lite"] [data-heli-still] {
+  opacity: 1;
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(48deg) brightness(calc(0.42 * var(--fx-flat-lift, 1.2)))
+    drop-shadow(0 0 2px rgb(124 255 91 / 0.8)) drop-shadow(0 0 14px rgb(124 255 91 / 0.25));
+}
+/* The hero's sits on the bright night-vision sky (and FULL adds the searchlight there): lift it more. */
+html[data-fx="lite"] [data-hero="heli"] {
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(48deg) brightness(calc(0.62 * var(--fx-flat-lift, 1.2)))
+    drop-shadow(0 0 2px rgb(124 255 91 / 0.8)) drop-shadow(0 0 18px rgb(124 255 91 / 0.3));
+}
+
+/* ==========================================================================
    Crosshair cursor (components/site/CrosshairCursor). Desktop mouse only:
    html[data-crosshair] is set once a real mouse moves on a (hover: hover) and
    (pointer: fine) device, so touch, pen, keyboard and no-JS keep the native
