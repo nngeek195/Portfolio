@@ -4,9 +4,11 @@
 export type Skill = { name: string; icon: string };
 
 // `anchor` (optional) overrides which part the schematic marker sits on.
-export const LOADOUT: { part: string; anchor?: string; slot: string; group: string; skills: Skill[] }[] = [
+// `modelParts`: rifle.glb nodes that make up this module in the 3D assembly.
+export const LOADOUT: { part: string; anchor?: string; modelParts: string[]; slot: string; group: string; skills: Skill[] }[] = [
   {
     part: 'receiver',
+    modelParts: ['receiver'],
     slot: 'Receiver',
     group: 'Core Languages',
     skills: [
@@ -18,6 +20,7 @@ export const LOADOUT: { part: string; anchor?: string; slot: string; group: stri
   },
   {
     part: 'scope',
+    modelParts: ['scope', 'sight_rear', 'sight_front'],
     slot: 'Optic',
     group: 'Frontend',
     skills: [
@@ -27,6 +30,7 @@ export const LOADOUT: { part: string; anchor?: string; slot: string; group: stri
   },
   {
     part: 'handguard',
+    modelParts: ['handguard', 'foregrip'],
     slot: 'Handguard',
     group: 'Backend',
     skills: [
@@ -36,6 +40,7 @@ export const LOADOUT: { part: string; anchor?: string; slot: string; group: stri
   },
   {
     part: 'magazine',
+    modelParts: ['magazine'],
     slot: 'Magazine',
     group: 'Data',
     skills: [
@@ -48,6 +53,7 @@ export const LOADOUT: { part: string; anchor?: string; slot: string; group: stri
   {
     part: 'stock',
     anchor: 'cheekrest', // the stock's centre sits behind the magazine
+    modelParts: ['stock', 'cheekrest', 'buttpad'],
     slot: 'Stock',
     group: 'Cloud',
     skills: [
@@ -58,6 +64,7 @@ export const LOADOUT: { part: string; anchor?: string; slot: string; group: stri
   },
   {
     part: 'suppressor',
+    modelParts: ['suppressor'],
     slot: 'Suppressor',
     group: 'Security & Ops',
     skills: [

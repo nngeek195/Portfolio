@@ -4,6 +4,7 @@ import { model } from '@/lib/models';
 import Schematic from '@/components/ui/Schematic';
 import SectionHeader from '@/components/ui/SectionHeader';
 import LoadoutScene from '@/components/scenes/LoadoutScene';
+import ModelSlot from '@/components/three/ModelSlot';
 
 function SkillChips({ skills }: { skills: Skill[] }) {
   return (
@@ -96,14 +97,17 @@ export default function Loadout() {
                 <span>Schematic {'//'} Primary</span>
                 <span data-loadout="counter">Module 01/{String(LOADOUT.length).padStart(2, '0')}</span>
               </div>
-              <div data-loadout="viewport" className="relative grid min-h-0 flex-1 place-items-center overflow-hidden">
-                <Schematic
-                  poster={rifle}
-                  alt="Schematic render of a rifle; the highlighted marker is the module described below"
-                  sizes="(min-width: 1280px) 760px, 60vw"
-                  className="w-full max-w-3xl"
-                  markers={markers}
-                />
+              <div data-loadout="viewport" className="relative min-h-0 flex-1 overflow-hidden">
+                {/* 3D rifle assembles here (Phase 4); the schematic is the fallback / poster */}
+                <ModelSlot kind="rifle" className="absolute inset-0" fallbackClassName="grid h-full place-items-center">
+                  <Schematic
+                    poster={rifle}
+                    alt="Schematic render of a rifle; the highlighted marker is the module described below"
+                    sizes="(min-width: 1280px) 760px, 60vw"
+                    className="w-full max-w-3xl"
+                    markers={markers}
+                  />
+                </ModelSlot>
                 <span aria-hidden="true" data-loadout="scan" className="absolute inset-y-4 left-0 w-px bg-blueprint shadow-[0_0_14px_rgb(95_168_211/0.9)]" />
               </div>
             </div>

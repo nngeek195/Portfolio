@@ -9,6 +9,7 @@ export type ModelKind = 'rifle' | 'pistol' | 'heli-comms' | 'heli-debrief';
 // Each model view is its own lazy chunk (they share the three.js chunk).
 // A kind without a view keeps its flat render.
 const VIEWS: Partial<Record<ModelKind, ComponentType<{ onReady: () => void }>>> = {
+  rifle: dynamic(() => import('./views/RifleView'), { ssr: false }),
 };
 
 /**
