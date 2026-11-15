@@ -13,6 +13,7 @@ import { debrief } from './segments/debrief';
 // soon as it arrives. The first one that returns a pose flies the helicopter;
 // when none does (between scenes) it patrols.
 const SEGMENTS: Segment[] = [hero, dossier, loadout, ops, debrief, comms];
+const NAMES = ['hero', 'dossier', 'loadout', 'ops', 'debrief', 'comms'];
 
 /**
  * Flight director: once per frame, works out where the helicopter should be
@@ -49,6 +50,7 @@ export function createDirector() {
 
   return {
     signals,
+    owner: '-',
     pose(t: number): Pose {
       cache = new Map();
       cacheAll = new Map();
@@ -65,10 +67,14 @@ export function createDirector() {
         rects,
         signals,
       };
-      for (const seg of SEGMENTS) {
-        const p = seg(ctx);
-        if (p) return p;
+      for (let i = 0; i < SEGMENTS.length; i++) {
+        const p = SEGMENTS[i](ctx);
+        if (p) {
+          this.owner = NAMES[i];
+          return p;
+        }
       }
+      this.owner = 'patrol';
       return patrol(ctx);
     },
     dispose() {

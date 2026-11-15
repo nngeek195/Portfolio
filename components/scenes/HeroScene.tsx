@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
 import { HERO_PROGRESS_EVENT, type HeroProgressDetail } from '@/lib/motion/heli';
+import { dbg } from '@/lib/debug';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -45,6 +46,7 @@ export default function HeroScene() {
         },
       });
 
+      dbg.triggers.hero = tl.scrollTrigger;
       tl.to($('heli'), { xPercent: -150, yPercent: -40, scale: 0.55, rotation: -9, duration: 0.6 }, 0)
         .to($('sky'), { scale: 1.18, duration: 0.6 }, 0)
         .to($('ridge'), { yPercent: 35, duration: 0.6 }, 0)

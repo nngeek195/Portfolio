@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { dbg, dbgEvent } from '@/lib/debug';
 import { PerformanceMonitor, View } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -13,12 +14,23 @@ function FrameloopController({ active }: { active: boolean }) {
   const invalidate = useThree((s) => s.invalidate);
   useEffect(() => {
     setFrameloop(active ? 'always' : 'demand');
+    dbg.canvas.frameloop = active ? 'always' : 'demand';
     invalidate(); // one frame so views clear / re-check cleanly
     if (active) return;
     const onScroll = () => invalidate();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [active, setFrameloop, invalidate]);
+  return null;
+}
+
+/** Diagnostics only: counts rendered frames (lib/debug). */
+function FrameCounter() {
+  useFrame(() => {
+    dbg.canvas.frames++;
+    dbg.canvas.lastFrameAt = performance.now();
+  });
+  useEffect(() => () => void (dbg.canvas.frameloop = 'none'), []);
   return null;
 }
 
@@ -33,6 +45,7 @@ export default function SharedCanvas({ active, onFallback }: { active: boolean; 
   // flat renders for the rest of the visit.
   const [dpr, setDpr] = useState(1.5);
   const declinesAtLowest = useRef(0);
+  useEffect(() => void (dbg.canvas.dpr = dpr), [dpr]);
   return (
     <Canvas
       aria-hidden="true"
@@ -48,6 +61,8 @@ export default function SharedCanvas({ active, onFallback }: { active: boolean; 
       <PerformanceMonitor
         flipflops={4}
         onDecline={() => {
+          dbg.canvas.declines++;
+          dbgEvent(`perf decline at dpr ${dpr}`);
           if (dpr > 1) setDpr(1);
           else if (++declinesAtLowest.current >= 2) onFallback();
         }}
@@ -55,8 +70,12 @@ export default function SharedCanvas({ active, onFallback }: { active: boolean; 
           declinesAtLowest.current = 0;
           setDpr(1.5);
         }}
-        onFallback={onFallback}
+        onFallback={() => {
+          dbgEvent('perf monitor flip-flop fallback');
+          onFallback();
+        }}
       />
+      <FrameCounter />
       <View.Port />
       <FrameloopController active={active} />
     </Canvas>

@@ -3,6 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
+import { dbg, dbgEvent } from '@/lib/debug';
+import DebugOverlay from '@/components/debug/DebugOverlay';
 
 // The shared WebGL canvas (three.js, R3F, drei) is a separate lazy chunk: it is
 // only downloaded once a 3D section is about to come into view.
@@ -99,6 +101,7 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
   const onFallback = useCallback(() => {
     if (isForced()) return;
     console.info('3D switched off for this visit (device could not keep a smooth frame rate); showing flat renders.');
+    dbgEvent('3D fallback to flat renders');
     setFellBack(true);
   }, []);
   const active3D = enabled && !fellBack;
@@ -113,6 +116,10 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
   }, [active3D]);
   const onCompanionVisible = useCallback((v: boolean) => setVisible('companion', v), [setVisible]);
 
+  useEffect(() => {
+    Object.assign(dbg.three, { enabled: active3D, fellBack, fallbackReason: fellBack ? 'frame rate' : '', canvasMounted: active3D && canvasRequested, companionMounted: active3D && companion, visibleSlots: [...visible] });
+  }, [active3D, fellBack, canvasRequested, companion, visible]);
+
   const value = useMemo(() => ({ enabled: active3D, requestCanvas, setVisible }), [active3D, requestCanvas, setVisible]);
 
   return (
@@ -120,6 +127,7 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
       {children}
       {active3D && canvasRequested && <SharedCanvas active={visible.size > 0} onFallback={onFallback} />}
       {active3D && companion && <CompanionHeli onVisible={onCompanionVisible} />}
+      <DebugOverlay />
     </ThreeContext.Provider>
   );
 }

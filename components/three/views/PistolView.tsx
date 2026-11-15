@@ -9,6 +9,7 @@ import { model } from '@/lib/models';
 import { DOSSIER_PROGRESS_EVENT, type DossierProgressDetail } from '@/components/scenes/DossierScene';
 import { prepareModel, setGlow } from '../nightVision';
 import ModelView, { ReadySignal } from './ModelView';
+import { dbg } from '@/lib/debug';
 
 const URL = model('pistol').url;
 
@@ -41,6 +42,7 @@ function Pistol({ onReady }: { onReady: () => void }) {
     // the parent of a known part (getObjectByName would return the scene root itself).
     const pistol = root.getObjectByName('frame')?.parent ?? root;
     rig.current = { pistol, base: new Map(pistol.children.map((c) => [c.name, c.position.clone()])), materials: prepareModel(pistol) };
+    dbg.pistol.loaded = true;
   }, [root]);
   const target = useRef(0);
   const current = useRef(0);
@@ -57,6 +59,7 @@ function Pistol({ onReady }: { onReady: () => void }) {
     const { pistol, base, materials } = r;
     const p = (current.current = THREE.MathUtils.damp(current.current, target.current, 7, delta));
     const t = state.clock.elapsedTime;
+    Object.assign(dbg.pistol, { applied: p, expected: dbg.triggers.dossier?.progress ?? -1, lastFrameAt: performance.now() });
     const back = smooth(THREE.MathUtils.clamp((p - REASSEMBLE[0]) / (REASSEMBLE[1] - REASSEMBLE[0]), 0, 1));
 
     for (const part of pistol.children) {

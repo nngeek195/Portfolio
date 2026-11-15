@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
+import { dbg } from '@/lib/debug';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -43,7 +44,7 @@ export default function LoadoutScene({ count }: { count: number }) {
       };
       activate(0);
 
-      ScrollTrigger.create({
+      dbg.triggers.loadout = ScrollTrigger.create({
         trigger: stage,
         start: 'top top+=88',
         end: `+=${count * 55}%`,

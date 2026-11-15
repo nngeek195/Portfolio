@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { SCENE_MEDIA } from '@/lib/motion/scenes';
+import { dbg } from '@/lib/debug';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -51,6 +52,7 @@ export default function DossierScene() {
         },
       });
 
+      dbg.triggers.dossier = tl.scrollTrigger;
       const barStep = 0.72 / Math.max(bars.length, 1);
       bars.forEach((bar, i) => tl.to(bar, { scaleX: 0, duration: barStep * 1.4, ease: 'power2.inOut' }, i * barStep));
 

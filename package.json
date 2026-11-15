@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "models": "node scripts/models/build-models.mjs"
+    "models": "node scripts/models/build-models.mjs",
+    "stress": "node --experimental-websocket scripts/stress/heli-rifle.mjs"
   },
   "dependencies": {
     "@cloudinary/react": "^1.14.4",

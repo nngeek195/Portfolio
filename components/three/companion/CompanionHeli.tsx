@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { model } from '@/lib/models';
 import { PROFILE } from '@/lib/profile';
 import { HELI_LIVE_ATTR } from '@/lib/motion/heli';
+import { dbg, dbgEvent } from '@/lib/debug';
 import { getAudioContext, useSoundOn } from '@/lib/audio/sound';
 import type { RotorAudio } from '@/lib/audio/rotor';
 import { prepareModel, applyNightVision, type NightVisionUniforms } from '../nightVision';
@@ -106,6 +107,8 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
     const { scene, gl } = get(); // `scene` is this view's own (portal) scene
     const built = buildRig(gltfScene, gl);
     rig.current = built;
+    dbg.heli.loaded = true;
+    dbgEvent('heli model ready');
     scene.add(built.outer, built.searchlight.group, built.shadow, built.particles.points);
     // Draw on top of the other model views: clear depth before this view renders.
     const prev = scene.onBeforeRender;
@@ -150,6 +153,8 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
   useEffect(
     () => () => {
       document.documentElement.removeAttribute(HELI_LIVE_ATTR);
+      dbg.heli.live = false;
+      dbg.heli.loaded = false;
       onVisible(false);
     },
     [onVisible]
@@ -323,6 +328,11 @@ function Rig({ onVisible }: { onVisible: (visible: boolean) => void }) {
     const offBy = Math.max(0, -r.x, r.x - W, -r.y, r.y - H);
     const presence = want ? clamp(1 - offBy / 450, 0, 1) : 0;
     audio.current?.update(clamp(r.size / 420, 0.1, 1) * presence * r.bright, clamp((r.rotorSpeed - 6) / 42, 0, 1));
+    Object.assign(dbg.heli, {
+      owner: director.owner, x: r.x, y: r.y, size: r.size, bright: r.bright, nv: r.nv, targetX: pose.x, targetY: pose.y,
+      onScreen, want, finite: [r.x, r.y, r.size, r.yaw, r.pitch, r.roll].every(Number.isFinite), lastFrameAt: performance.now(), frameScrollY: sy,
+      live: document.documentElement.hasAttribute(HELI_LIVE_ATTR),
+    });
     if (!live.current) {
       live.current = true;
       requestAnimationFrame(() => document.documentElement.setAttribute(HELI_LIVE_ATTR, ''));

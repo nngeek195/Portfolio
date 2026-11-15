@@ -8,6 +8,7 @@ import { LOADOUT } from '@/lib/loadout';
 import { model } from '@/lib/models';
 import { LOADOUT_PROGRESS_EVENT, type LoadoutProgressDetail } from '@/components/scenes/LoadoutScene';
 import { loadoutApproach } from '@/lib/motion/heli';
+import { dbg, dbgEvent } from '@/lib/debug';
 import { prepareModel, setGlow } from '../nightVision';
 import ModelView, { ReadySignal } from './ModelView';
 
@@ -49,6 +50,9 @@ function Rifle({ onReady }: { onReady: () => void }) {
       base: new Map(rifle.children.map((c) => [c.name, c.position.clone()])),
       materials: prepareModel(rifle),
     };
+    dbg.rifle.loaded = true;
+    dbgEvent('rifle model ready');
+    return () => void (dbg.rifle.loaded = false);
   }, [root]);
 
   const target = useRef({ progress: 0, index: 0 });
@@ -85,6 +89,23 @@ function Rifle({ onReady }: { onReady: () => void }) {
         part.position.set(home.x + off[0] * loose, home.y + off[1] * loose + bob + fall, home.z + off[2] * loose);
       }
     });
+
+    // Diagnostics: how far each part is from the pose the *current* scroll position calls for.
+    const expected = dbg.triggers.loadout ? dbg.triggers.loadout.progress : -1;
+    let maxErr = 0;
+    if (expected >= 0)
+      LOADOUT.forEach((module, i) => {
+        const assembled = smooth(THREE.MathUtils.clamp(expected * n - i, 0, 1));
+        const landed = smooth(THREE.MathUtils.clamp((approach - 0.52 - i * 0.04) / 0.26, 0, 1));
+        for (const name of module.modelParts) {
+          const part = parts.get(name), home = base.get(name), off = EXPLODE[name];
+          if (!part || !home || !off) continue;
+          const loose = 1 - assembled;
+          const ex = home.x + off[0] * loose, ey = home.y + off[1] * loose + (1 - landed) * DROP_HEIGHT, ez = home.z + off[2] * loose;
+          maxErr = Math.max(maxErr, Math.hypot(part.position.x - ex, part.position.y - ey, part.position.z - ez));
+        }
+      });
+    Object.assign(dbg.rifle, { applied: p, expected, approach, maxPartErr: maxErr, lastFrameAt: performance.now(), frameScrollY: window.scrollY });
 
     // Glow the active module (pulse); clear the previous one.
     const active = target.current.index;
