@@ -11,6 +11,8 @@ export type ModelKind = 'rifle' | 'pistol' | 'heli-comms' | 'heli-debrief';
 const VIEWS: Partial<Record<ModelKind, ComponentType<{ onReady: () => void }>>> = {
   rifle: dynamic(() => import('./views/RifleView'), { ssr: false }),
   pistol: dynamic(() => import('./views/PistolView'), { ssr: false }),
+  'heli-comms': dynamic(() => import('./views/HeliView').then((m) => m.HeliCommsView), { ssr: false }),
+  'heli-debrief': dynamic(() => import('./views/HeliView').then((m) => m.HeliDebriefView), { ssr: false }),
 };
 
 /**

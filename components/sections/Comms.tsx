@@ -5,6 +5,7 @@ import { model } from '@/lib/models';
 import Placeholder from '@/components/ui/Placeholder';
 import SectionHeader from '@/components/ui/SectionHeader';
 import OpenCommsHandler from './OpenCommsHandler';
+import ModelSlot from '@/components/three/ModelSlot';
 
 const channelClass =
   'clip-corner group grid grid-cols-[4.5rem_1fr_auto] items-center gap-4 bg-gunmetal px-5 py-4 ring-1 ring-inset ring-steel transition-colors hover:ring-ash';
@@ -77,14 +78,17 @@ export default function Comms() {
               backgroundPosition: 'center, center, 0 58%, 50% 0',
             }}
           />
-          <Image
-            src={heli.src}
-            width={heli.width}
-            height={heli.height}
-            alt=""
-            sizes="(min-width: 1024px) 560px, 90vw"
-            className="absolute left-1/2 top-[44%] w-[86%] -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_0_2px_rgb(124_255_91/0.8)]"
-          />
+          {/* 3D helicopter descends and hovers here (Phase 4); the silhouette is the fallback */}
+          <ModelSlot kind="heli-comms" className="absolute inset-0">
+            <Image
+              src={heli.src}
+              width={heli.width}
+              height={heli.height}
+              alt=""
+              sizes="(min-width: 1024px) 560px, 90vw"
+              className="absolute left-1/2 top-[44%] w-[86%] -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_0_2px_rgb(124_255_91/0.8)]"
+            />
+          </ModelSlot>
           <div className="scanlines absolute inset-0 opacity-50" />
           <div className="absolute inset-x-5 top-5 flex justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-nv">
             <span>Extraction inbound</span>

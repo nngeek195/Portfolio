@@ -1,13 +1,21 @@
+import Image from 'next/image';
 import { ArrowUp } from 'lucide-react';
+import { model } from '@/lib/models';
+import ModelSlot from '@/components/three/ModelSlot';
 import SectionHeader from '@/components/ui/SectionHeader';
 import TacButton from '@/components/ui/TacButton';
 
 // OBJ-08 Debrief (Summary). Phase 2: night vision powers down to black here.
 export default function Debrief({ stats }: { stats: { label: string; value: number }[] }) {
+  const heli = model('heli').poster;
   return (
     <section id="debrief" aria-labelledby="debrief-title" className="relative scroll-mt-16 border-t border-steel/60 bg-gradient-to-b from-void to-black py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-5 text-center md:px-8">
         <SectionHeader id="debrief" align="center" />
+        {/* Extraction lift-off (Phase 4 3D); faint silhouette as the fallback */}
+        <ModelSlot kind="heli-debrief" className="-mx-5 mb-6 h-48 md:-mx-8 md:h-56" fallbackClassName="flex h-full items-center justify-start">
+          <Image src={heli.src} width={heli.width} height={heli.height} alt="" aria-hidden="true" sizes="240px" className="ml-[8%] w-56 -rotate-6 opacity-60 drop-shadow-[0_0_2px_rgb(124_255_91/0.8)]" />
+        </ModelSlot>
         <p className="font-stencil text-4xl uppercase tracking-[0.15em] text-nv md:text-6xl">
           <span data-reveal="decode">Mission complete</span>
         </p>
