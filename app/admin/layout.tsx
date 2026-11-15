@@ -2,11 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, onIdTokenChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 import { LayoutDashboard, Import, Image as ImageIcon, LogOut } from 'lucide-react';
 import Cookies from 'js-cookie';
+
+// Keeps the admin_session cookie holding a current Firebase ID token. ID tokens
+// expire after 1 hour; the admin API routes verify the token (lib/admin-session),
+// so the cookie is refreshed whenever Firebase issues a new one. Same cookie,
+// same options as the login page sets.
+async function refreshSessionCookie(user: User) {
+  try {
+    Cookies.set('admin_session', await user.getIdToken(), { expires: 1, path: '/', sameSite: 'strict' });
+  } catch (error) {
+    console.error('Could not refresh admin session cookie:', error);
+  }
+}
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
@@ -15,7 +27,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      // Refresh the cookie before the page renders, so its first API calls are authorised.
+      if (currentUser) await refreshSessionCookie(currentUser);
       setUser(currentUser);
       setLoading(false);
       
@@ -26,6 +40,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     });
     return () => unsubscribe();
   }, [pathname, router]);
+
+  // Firebase refreshes the ID token about once an hour while the admin is open.
+  useEffect(() => onIdTokenChanged(auth, (currentUser) => {
+    if (currentUser) refreshSessionCookie(currentUser);
+  }), []);
 
   if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-cyan-400">Loading Access...</div>;
 

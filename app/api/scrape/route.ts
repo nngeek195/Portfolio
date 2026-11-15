@@ -1,7 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import * as cheerio from 'cheerio';
+import { adminSessionRequired, getAdminSession } from '@/lib/admin-session';
 
-export async function GET(request: Request) {
+// Admin-only: fetches arbitrary URLs server-side for the URL importer, so it
+// requires a verified admin session (otherwise it is an open proxy).
+export async function GET(request: NextRequest) {
+  if (!(await getAdminSession(request))) return adminSessionRequired();
+
   const { searchParams } = new URL(request.url);
   const targetUrl = searchParams.get('url');
 
