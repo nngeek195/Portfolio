@@ -5,6 +5,7 @@ import Placeholder from '@/components/ui/Placeholder';
 import Schematic from '@/components/ui/Schematic';
 import SectionHeader from '@/components/ui/SectionHeader';
 import DossierScene from '@/components/scenes/DossierScene';
+import ModelSlot from '@/components/three/ModelSlot';
 
 // Redaction bar over a field. Invisible unless DossierScene runs (desktop,
 // motion allowed), which shows it and then wipes it away on scroll. The text
@@ -107,14 +108,16 @@ export default function PersonnelFile({ profileImages, intervalSeconds }: { prof
               <span id="sidearm-title">Personal sidearm</span>
               <span>Traits</span>
             </div>
-            <Schematic
-              poster={pistol}
-              alt="Schematic render of a pistol, with numbered parts matching the trait list"
-              sizes="(min-width: 1024px) 420px, 90vw"
-              className="mx-auto mt-6 max-w-md"
-              reveal="mask"
-              markers={SIDEARM_TRAITS.map((t, i) => ({ part: t.part, n: i + 1, label: t.label }))}
-            />
+            {/* 3D pistol field-strips here (Phase 4); the schematic is the fallback / poster */}
+            <ModelSlot kind="pistol" className="mx-auto mt-6 max-w-md">
+              <Schematic
+                poster={pistol}
+                alt="Schematic render of a pistol, with numbered parts matching the trait list"
+                sizes="(min-width: 1024px) 420px, 90vw"
+                reveal="mask"
+                markers={SIDEARM_TRAITS.map((t, i) => ({ part: t.part, n: i + 1, label: t.label }))}
+              />
+            </ModelSlot>
             <ol className="mt-6 grid gap-2.5">
               {SIDEARM_TRAITS.map((t, i) => (
                 <li key={t.part} data-trait={i + 1} className="grid grid-cols-[2rem_6.5rem_1fr] items-baseline gap-2 border-b border-steel/50 pb-2">

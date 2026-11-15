@@ -10,6 +10,7 @@ export type ModelKind = 'rifle' | 'pistol' | 'heli-comms' | 'heli-debrief';
 // A kind without a view keeps its flat render.
 const VIEWS: Partial<Record<ModelKind, ComponentType<{ onReady: () => void }>>> = {
   rifle: dynamic(() => import('./views/RifleView'), { ssr: false }),
+  pistol: dynamic(() => import('./views/PistolView'), { ssr: false }),
 };
 
 /**
