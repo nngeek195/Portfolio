@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChanged, onIdTokenChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import Link from 'next/link';
-import { LayoutDashboard, Import, Image as ImageIcon, LogOut } from 'lucide-react';
+import { LayoutDashboard, Import, Image as ImageIcon, LogOut, Award } from 'lucide-react';
 import Cookies from 'js-cookie';
 
 // Keeps the admin_session cookie holding a current Firebase ID token. ID tokens
@@ -65,6 +65,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Link>
           <Link href="/admin/dashboard/importers" className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${pathname === '/admin/dashboard/importers' ? 'bg-cyan-900/30 text-cyan-400' : 'text-slate-400 hover:bg-gray-900'}`}>
             <Import size={20} /> Importers & Sync
+          </Link>
+          <Link href="/admin/dashboard/certificates" className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${pathname === '/admin/dashboard/certificates' ? 'bg-cyan-900/30 text-cyan-400' : 'text-slate-400 hover:bg-gray-900'}`}>
+            <Award size={20} /> Certificates
           </Link>
           <Link href="/admin/dashboard/media" className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${pathname === '/admin/dashboard/media' ? 'bg-cyan-900/30 text-cyan-400' : 'text-slate-400 hover:bg-gray-900'}`}>
             <ImageIcon size={20} /> Media Showcase
