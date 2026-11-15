@@ -692,6 +692,104 @@ html[data-boot="exit"][data-boot-lite] .boot-lid {
 }
 
 /* ==========================================================================
+   Crosshair cursor (components/site/CrosshairCursor). Desktop mouse only:
+   html[data-crosshair] is set once a real mouse moves on a (hover: hover) and
+   (pointer: fine) device, so touch, pen, keyboard and no-JS keep the native
+   cursor. Text fields and the chat ([data-native-cursor]) keep theirs too.
+   ========================================================================== */
+.crosshair-layer {
+  display: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  html[data-crosshair] .crosshair-layer {
+    display: block;
+  }
+  html[data-crosshair],
+  html[data-crosshair] * {
+    cursor: none !important;
+  }
+  html[data-crosshair] :is(input, textarea, [contenteditable=""], [contenteditable="true"]),
+  html[data-crosshair] [data-native-cursor] :is(input, textarea) {
+    cursor: text !important;
+  }
+  html[data-crosshair] select,
+  html[data-crosshair] [data-native-cursor],
+  html[data-crosshair] [data-native-cursor] * {
+    cursor: default !important;
+  }
+  html[data-crosshair] [data-native-cursor] :is(a[href], button:not(:disabled), [role="button"]),
+  html[data-crosshair] [data-native-cursor] :is(a[href], button:not(:disabled), [role="button"]) * {
+    cursor: pointer !important;
+  }
+}
+.crosshair,
+.crosshair-brackets {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 120; /* above the film grain, modals and the boot preloader */
+  pointer-events: none;
+  will-change: transform;
+}
+.crosshair {
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  transition: opacity 0.12s;
+}
+.crosshair[data-state="hidden"] {
+  opacity: 0;
+}
+.crosshair svg {
+  overflow: visible;
+  /* Dark outline so it reads on bone buttons and light images as well as on the dark page. */
+  filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.95)) drop-shadow(0 0 2px rgb(0 0 0 / 0.6));
+}
+.crosshair-ticks {
+  stroke: var(--color-nv);
+  stroke-width: 1.5;
+  stroke-linecap: square;
+  transform-origin: 0 0;
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.18s;
+}
+.crosshair-dot {
+  fill: var(--color-nv);
+}
+/* Locked: the ticks pull in and fade, the brackets take over. */
+.crosshair[data-state="locked"] .crosshair-ticks {
+  transform: scale(0.55);
+  opacity: 0.35;
+}
+.crosshair-brackets {
+  opacity: 0;
+  transition:
+    transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.16s cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 0.16s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.12s;
+}
+html[data-crosshair] .crosshair-brackets[data-state="locked"] {
+  opacity: 1;
+}
+.crosshair-brackets > span {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 0 solid var(--color-nv);
+  filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.9));
+}
+.crosshair-brackets > span:nth-child(1) { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
+.crosshair-brackets > span:nth-child(2) { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
+.crosshair-brackets > span:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
+.crosshair-brackets > span:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .crosshair-brackets,
+  .crosshair-ticks {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
    Companion helicopter (components/three/companion). While the live 3D
    helicopter flies, the flat stills it replaces fade out (they stay in the
    layout: the hero still keeps animating as the 3D one's flight guide).

@@ -164,6 +164,7 @@ export default function ChatWidget() {
       <div
         role="dialog"
         aria-label="Comms handler"
+        data-native-cursor
         aria-hidden={!isOpen}
         inert={!isOpen}
         className={`fixed inset-0 z-50 flex origin-bottom-right flex-col bg-void ring-1 ring-steel transition-all duration-300 sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[32rem] sm:max-h-[85vh] sm:w-96 ${

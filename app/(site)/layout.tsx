@@ -5,6 +5,7 @@ import Reveals from '@/components/motion/Reveals';
 import BootScreen from '@/components/boot/BootScreen';
 import BootController from '@/components/boot/BootController';
 import AudioDirector from '@/components/site/AudioDirector';
+import CrosshairCursor from '@/components/site/CrosshairCursor';
 
 // Shared shell for the public pages (/, /projects, /articles).
 // The admin dashboard has its own layout and gets none of this — including the
@@ -31,6 +32,7 @@ export default function SiteLayout({ children }: LayoutProps<'/'>) {
       <Reveals />
       <BootController />
       <AudioDirector />
+      <CrosshairCursor />
     </MotionProvider>
     </>
   );
