@@ -29,6 +29,9 @@ export function comms({ t, W, H, gutter, rect, signals }: DirectorContext): Clai
   let y = lerp(H * 0.2, hoverY - size * 0.22, d);
   const settle = smoothstep(0.5, 0.82, p);
   y = lerp(y, hoverY, settle) + Math.sin(t * 1.7) * 4 * settle;
+  // Phones: the pad is still below the fold while the section arrives; wait at the bottom edge
+  // (on screen) until it comes up instead of descending out of view.
+  y = Math.min(y, H - size * 0.3);
   const flare = Math.sin(Math.PI * clamp01((p - 0.38) / 0.3)) * 0.24;
 
   let pitch = flare;

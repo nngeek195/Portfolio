@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
-import { get3D } from '@/lib/three-capability';
+import { get3D, getHeli3D } from '@/lib/three-capability';
 import { subscribeFx } from '@/lib/fx';
 import { model } from '@/lib/models';
 import { introStartedAt, whenBootDone } from '@/lib/boot/state';
@@ -59,6 +59,8 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
   // Client-only decision without a setState-in-effect; false during SSR/hydration.
   // Follows the FX switch: LITE turns the whole 3D layer off (flat renders), FULL back on.
   const enabled = useSyncExternalStore(subscribeFx, get3D, () => false);
+  // The live helicopter alone also flies on capable phones / tablets (no scene models there).
+  const heliEnabled = useSyncExternalStore(subscribeFx, getHeli3D, () => false);
   // Set when the device can't keep up at runtime (see SharedCanvas): back to flat renders.
   const [fellBack, setFellBack] = useState(false);
   const [fallbackReason, setFallbackReason] = useState('');
@@ -112,34 +114,35 @@ export default function ThreeProvider({ children }: { children: React.ReactNode 
     arm();
   }, []);
   const active3D = enabled && !fellBack;
+  const activeHeli = heliEnabled && !fellBack;
   useEffect(() => {
     dbg.hooks.fallback = onFallback;
     // Preload the flat helicopter's chunk so a fallback swap has nothing to wait for.
-    if (enabled) void import('./companion/FlatCompanion');
-  }, [enabled, onFallback]);
+    if (heliEnabled) void import('./companion/FlatCompanion');
+  }, [heliEnabled, onFallback]);
 
   // Swap the hero's pre-rendered helicopter for the live one once the page is idle.
   useEffect(() => {
-    if (!active3D) return;
+    if (!activeHeli) return;
     return whenIdleAfterLoad(() => {
       setCanvasRequested(true);
       setCompanion(true);
     });
-  }, [active3D]);
+  }, [activeHeli]);
   const onCompanionVisible = useCallback((v: boolean) => setVisible('companion', v), [setVisible]);
 
   useEffect(() => {
-    Object.assign(dbg.three, { enabled: active3D, fellBack, fallbackReason, canvasMounted: active3D && canvasRequested, companionMounted: active3D && companion, visibleSlots: [...visible] });
-  }, [active3D, fellBack, fallbackReason, canvasRequested, companion, visible]);
+    Object.assign(dbg.three, { enabled: active3D, heliOnly: activeHeli && !active3D, fellBack, fallbackReason, canvasMounted: activeHeli && canvasRequested, companionMounted: activeHeli && companion, visibleSlots: [...visible] });
+  }, [active3D, activeHeli, fellBack, fallbackReason, canvasRequested, companion, visible]);
 
   const value = useMemo(() => ({ enabled: active3D, requestCanvas, setVisible }), [active3D, requestCanvas, setVisible]);
 
   return (
     <ThreeContext.Provider value={value}>
       {children}
-      {active3D && canvasRequested && <SharedCanvas active={visible.size > 0} onFallback={onFallback} />}
-      {active3D && companion && !heliFailed && <CompanionHeli onVisible={onCompanionVisible} onFailed={onHeliFailed} />}
-      {enabled && (flatMounted || heliFailed) && <FlatCompanion onReady={flatMounted ? onFlatReady : undefined} />}
+      {activeHeli && canvasRequested && <SharedCanvas active={visible.size > 0} onFallback={onFallback} />}
+      {activeHeli && companion && !heliFailed && <CompanionHeli onVisible={onCompanionVisible} onFailed={onHeliFailed} />}
+      {heliEnabled && (flatMounted || heliFailed) && <FlatCompanion onReady={flatMounted ? onFlatReady : undefined} />}
       <DebugOverlay />
     </ThreeContext.Provider>
   );

@@ -5,7 +5,7 @@
 // (scripts/stress/heli-rifle.mjs).
 
 export type DebugState = {
-  three: { enabled: boolean; fellBack: boolean; fallbackReason: string; canvasMounted: boolean; companionMounted: boolean; visibleSlots: string[] };
+  three: { enabled: boolean; heliOnly: boolean; fellBack: boolean; fallbackReason: string; canvasMounted: boolean; companionMounted: boolean; visibleSlots: string[] };
   canvas: { frameloop: 'always' | 'demand' | 'none'; dpr: number; frames: number; lastFrameAt: number; declines: number };
   heli: {
     loaded: boolean; live: boolean; owner: string; x: number; y: number; size: number; bright: number; nv: number;
@@ -21,7 +21,7 @@ export type DebugState = {
 };
 
 export const dbg: DebugState = {
-  three: { enabled: false, fellBack: false, fallbackReason: '', canvasMounted: false, companionMounted: false, visibleSlots: [] },
+  three: { enabled: false, heliOnly: false, fellBack: false, fallbackReason: '', canvasMounted: false, companionMounted: false, visibleSlots: [] },
   canvas: { frameloop: 'none', dpr: 0, frames: 0, lastFrameAt: 0, declines: 0 },
   heli: { loaded: false, live: false, owner: '-', x: 0, y: 0, size: 0, bright: 1, nv: 0.85, targetX: 0, targetY: 0, onScreen: false, want: false, finite: true, lastFrameAt: 0, frameScrollY: 0 },
   rifle: { loaded: false, applied: 0, expected: 0, approach: 0, maxPartErr: 0, lastFrameAt: 0, frameScrollY: 0 },
