@@ -56,9 +56,14 @@ export function ops({ W, H, rect }: DirectorContext): Claim | null {
   if (full !== lastFull) document.querySelector('#operations [data-ops-route="full"]')?.setAttribute('points', (lastFull = full));
   if (done !== lastDone) document.querySelector('#operations [data-ops-route="done"]')?.setAttribute('points', (lastDone = done));
 
+  // Hand back to patrol while the waypoint is off screen (phones: the track isn't pinned and
+  // scrolls away under the helicopter; on a pinned desktop track it is always in view).
+  const inView = smoothstep(-0.05 * H, 0.12 * H, y) * (1 - smoothstep(0.88 * H, 1.05 * H, y));
+  if (weight * inView <= 0) return clear();
+
   const topDown = 1 - smoothstep(0.18, 0.5, d);
   return {
-    weight,
+    weight: weight * inView,
     pose: {
       x,
       y,
