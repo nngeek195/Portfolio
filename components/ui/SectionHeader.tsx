@@ -26,7 +26,8 @@ export default function SectionHeader({ id, kicker, align = 'left' }: { id: Obje
       )}
       <div className={`mt-6 flex items-center gap-3 font-mono text-[10px] tracking-[0.25em] text-steel ${center ? 'justify-center' : ''}`} aria-hidden="true">
         <span data-reveal="line" className="h-px w-10 bg-nv/60" />
-        <span>SEC {o.code}/08</span>
+        {/* ash, not steel: steel is a border colour (1.4:1 on the page), too dark for text */}
+        <span className="text-ash">SEC {o.code}/08</span>
         <span data-reveal="line" className="h-px max-w-xs flex-1 border-t border-dashed border-steel" />
       </div>
     </header>

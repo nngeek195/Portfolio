@@ -9,7 +9,7 @@ export const PROFILE = {
 
   // PLACEHOLDER: callsign — your operator callsign (e.g. used in the hero,
   // dossier and nav). Also replaces the helicopter tail number later.
-  callsign: null as string | null,
+  callsign: 'nngeek195',
 
   roles: ['Developer', 'Cybersecurity'],
   unit: 'Faculty of Computing, Sabaragamuwa University of Sri Lanka',

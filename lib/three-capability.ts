@@ -7,7 +7,8 @@ import { getFx } from '@/lib/fx';
 /**
  * Decides whether real-time 3D runs. Requires the same conditions as the pinned
  * scenes (desktop-sized viewport, motion allowed) plus a capable device:
- * WebGL2, >= 4 CPU threads, >= 4 GB memory when reported, no Data Saver.
+ * hardware-accelerated WebGL2 (not a software renderer), >= 4 CPU threads,
+ * >= 4 GB memory when reported, no Data Saver.
  * Override for testing with ?3d=on or ?3d=off in the URL.
  * Everywhere else the flat renders stay (phones, reduced motion, low-end).
  */
@@ -21,10 +22,26 @@ function detectCapable(): boolean {
   if ((nav.hardwareConcurrency ?? 8) < 4) return false;
   if (nav.deviceMemory !== undefined && nav.deviceMemory < 4) return false;
   try {
-    return !!document.createElement('canvas').getContext('webgl2');
+    const gl = document.createElement('canvas').getContext('webgl2');
+    if (!gl) return false;
+    const software = isSoftwareRenderer(gl);
+    gl.getExtension('WEBGL_lose_context')?.loseContext(); // free the probe context
+    return !software;
   } catch {
     return false;
   }
+}
+
+/**
+ * WebGL drawn by the CPU (no GPU acceleration: blocklisted drivers, VMs, remote
+ * desktops, headless Chrome as used by Lighthouse / PageSpeed Insights). The 3D
+ * layer would saturate the main thread there, so those get the flat renders.
+ */
+const SOFTWARE_RENDERER = /swiftshader|llvmpipe|lavapipe|softpipe|software|basic render|mesa offscreen/i;
+function isSoftwareRenderer(gl: WebGL2RenderingContext): boolean {
+  const info = gl.getExtension('WEBGL_debug_renderer_info');
+  const renderer = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) ?? '');
+  return SOFTWARE_RENDERER.test(renderer);
 }
 
 let capableCache: boolean | null = null;
