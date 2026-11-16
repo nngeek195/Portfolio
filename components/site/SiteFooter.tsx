@@ -33,32 +33,7 @@ export default function SiteFooter() {
             )}
           </ul>
         </div>
-
-        <div className="max-w-xl text-xs text-ash md:text-right">
-          <p className="font-mono uppercase tracking-[0.2em] text-ash">3D asset credits</p>
-          <ul className="mt-3 space-y-2">
-            {MODELS.map((m) => (
-              <li key={m.id}>
-                <a href={m.credit.source} target="_blank" rel="noreferrer" className="text-bone/90 underline decoration-steel underline-offset-2 hover:decoration-ash">
-                  “{m.credit.title}”
-                </a>{' '}
-                by{' '}
-                <a href={m.credit.authorUrl} target="_blank" rel="noreferrer" className="underline decoration-steel underline-offset-2 hover:decoration-ash">
-                  {m.credit.author}
-                </a>
-                {' — '}
-                {m.credit.licenseUrl ? (
-                  <a href={m.credit.licenseUrl} target="_blank" rel="noreferrer" className="underline decoration-steel underline-offset-2 hover:decoration-ash">
-                    {m.credit.license}
-                  </a>
-                ) : (
-                  m.credit.license
-                )}
-                . Modified (re-textured, split, optimised{m.id === 'heli' ? '; crew figures and tail number added' : ''}).
-              </li>
-            ))}
-          </ul>
-        </div>
+        
       </div>
       <div className="border-t border-steel/50">
         {/* Right padding keeps the line clear of the fixed chat button (bottom right) until the page is wide enough. */}
